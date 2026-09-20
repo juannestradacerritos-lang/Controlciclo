@@ -52,10 +52,17 @@
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(244, 63, 94, 0.3); }
         .btn-pdf { background: #1F2937; box-shadow: 0 8px 15px rgba(31, 41, 55, 0.2); }
         .btn-pdf:hover { background: #111827; }
+        
+        /* Botones de acción inferior */
+        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-export { background: #10B981; margin-top: 0; font-size: 14px; padding: 12px; }
+        .btn-export:hover { background: #059669; }
+        .btn-import { background: #3B82F6; margin-top: 0; font-size: 14px; padding: 12px; }
+        .btn-import:hover { background: #2563EB; }
 
         .results { margin-top: 35px; display: none; }
         .cards-grid { display: grid; gap: 15px; }
-        .result-card { background: var(--card-bg); border: 1px solid var(--border-light); padding: 20px; border-radius: 16px; position: relative; overflow: hidden; }
+        .result-card { background: var(--card-bg); border: 1px solid var(--border-light); padding: 20px; border-radius: 16px; position: relative; overflow: hidden; page-break-inside: avoid; }
         .result-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
         .card-period::before { background: var(--color-period); }
         .card-ovulation::before { background: var(--color-ovulation); }
@@ -65,14 +72,20 @@
         .result-card p { font-size: 18px; font-weight: 700; color: var(--text-main); }
         .result-card small { font-size: 13px; color: var(--text-muted); display: block; margin-top: 6px; }
 
-        .chart-container { background: #FFF; border: 1px solid var(--border-light); border-radius: 16px; padding: 15px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: none; }
+        .chart-container { background: #FFF; border: 1px solid var(--border-light); border-radius: 16px; padding: 15px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: none; page-break-inside: avoid; }
 
         #historial { list-style: none; }
-        .historial-item { border: 1px solid var(--border-light); margin-bottom: 12px; padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .historial-item { border: 1px solid var(--border-light); margin-bottom: 12px; padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px; page-break-inside: avoid; }
         .hist-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-light); padding-bottom: 8px; margin-bottom: 4px; }
         .hist-date { font-weight: 700; font-size: 15px; }
         .hist-badge { background: #FCE7F3; color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
         .hist-detail { font-size: 14px; color: var(--text-muted); }
+        
+        .btn-delete { background: transparent; border: none; font-size: 18px; cursor: pointer; color: #EF4444; padding: 4px; border-radius: 8px; transition: 0.2s; }
+        .btn-delete:hover { background: #FEE2E2; }
+        
+        /* Ocultar botones en el PDF */
+        .no-print { display: block; }
     </style>
 </head>
 <body>
@@ -112,7 +125,7 @@
             <input type="checkbox" id="intimidad">
         </label>
 
-        <button class="btn-primary" id="btnCalcular">Registrar y Analizar</button>
+        <button class="btn-primary no-print" id="btnCalcular">Registrar y Analizar</button>
 
         <div class="results" id="resultadosPanel">
             <div class="section-title" style="margin-top: 0;">Proyecciones del Mes</div>
@@ -146,14 +159,23 @@
         </div>
     </div>
 
-    <div class="app-container" style="padding-top: 0; box-shadow: none; background: transparent; padding-bottom: 40px;">
+    <!-- Panel de controles inferiores (No se verán en el PDF) -->
+    <div class="app-container no-print" style="padding-top: 0; box-shadow: none; background: transparent; padding-bottom: 40px;">
         <button class="btn-primary btn-pdf" id="btnPdf">📄 Descargar Reporte Clínico</button>
+        
+        <div class="actions-grid">
+            <button class="btn-primary btn-export" id="btnExport">💾 Respaldar Datos</button>
+            <button class="btn-primary btn-import" id="btnImport">📂 Restaurar Datos</button>
+        </div>
+        <!-- Input oculto para cargar archivos json -->
+        <input type="file" id="inputFile" accept=".json" style="display: none;">
     </div>
 
-    <!-- Conexión a Firebase con tus credenciales integradas -->
+    <!-- Conexión a Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        // IMPORTANTE: Se añadió "remove" a la importación
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC4usCsv7vxYrqd_R3GefHecy1ZgPFivjU",
@@ -184,12 +206,12 @@
 
         function actualizarPromedioInteligente() {
             if (registros.length < 2) return 28;
-            registros.sort((a, b) => new Date(b.inicio) - new Date(a.inicio));
+            let tempRegistros = [...registros].sort((a, b) => new Date(b.inicio) - new Date(a.inicio));
             
             let sumaDias = 0, conteo = 0;
-            for (let i = 0; i < registros.length - 1; i++) {
-                let actual = new Date(registros[i].inicio);
-                let anterior = new Date(registros[i+1].inicio);
+            for (let i = 0; i < tempRegistros.length - 1; i++) {
+                let actual = new Date(tempRegistros[i].inicio);
+                let anterior = new Date(tempRegistros[i+1].inicio);
                 let diffDays = Math.ceil(Math.abs(actual - anterior) / (1000 * 60 * 60 * 24));
                 sumaDias += diffDays;
                 conteo++;
@@ -257,8 +279,11 @@
                 
                 let html = `
                     <div class="hist-header">
-                        <span class="hist-date">${new Date(reg.inicio + 'T12:00:00').toLocaleDateString('es-ES', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'})}</span>
-                        <span class="hist-badge">Auto</span>
+                        <div>
+                            <span class="hist-date">${new Date(reg.inicio + 'T12:00:00').toLocaleDateString('es-ES', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                            <span class="hist-badge">Auto</span>
+                        </div>
+                        <button class="btn-delete no-print" data-id="${reg.id}" title="Borrar ciclo">🗑️</button>
                     </div>
                     <div class="hist-detail">🩸 Sangrado: ${reg.diasSangrado} ${reg.fin ? `(hasta ${formatearFecha(reg.fin)})` : ''}</div>
                 `;
@@ -267,6 +292,16 @@
                 
                 li.innerHTML = html;
                 historialUI.appendChild(li);
+            });
+
+            // Función para borrar el ciclo
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if(confirm("¿Estás segura de eliminar este ciclo del historial?")) {
+                        const id = e.target.getAttribute('data-id');
+                        await remove(ref(db, 'registros_ciclo/' + id));
+                    }
+                });
             });
         }
 
@@ -280,24 +315,36 @@
 
             const opt = { weekday: 'short', day: 'numeric', month: 'short' };
             document.getElementById("resProximo").textContent = prox.toLocaleDateString('es-ES', opt);
-            document.getElementById("resPruebaEmbarazo").textContent = `*Prueba de embarazo recomendada desde el ${emb.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
+            document.getElementById("resPruebaEmbarazo").textContent = `*Prueba embarazo sugerida: ${emb.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
             document.getElementById("resOvulacion").textContent = ovu.toLocaleDateString('es-ES', opt);
             document.getElementById("resFertil").textContent = `${fIni.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} al ${fFin.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
             document.getElementById("resultadosPanel").style.display = "block";
         }
 
-        // Sincronización en tiempo real
+        // Sincronización en tiempo real con Firebase
         onValue(registrosRef, (snapshot) => {
             const data = snapshot.val();
             registros = [];
             if (data) {
-                Object.keys(data).forEach(key => registros.push(data[key]));
+                // Almacenamos la key de firebase como id para poder borrarlo después
+                Object.keys(data).forEach(key => {
+                    let item = data[key];
+                    item.id = key;
+                    registros.push(item);
+                });
+                
+                // Ordenar SIEMPRE por fecha, sin importar cuándo se ingresó
                 registros.sort((a, b) => new Date(b.inicio) - new Date(a.inicio));
                 
                 const ciclo = actualizarPromedioInteligente();
                 renderizarHistorial();
                 renderizarGrafico();
                 calcularProyecciones(registros[0].inicio, ciclo);
+            } else {
+                // Limpiar si no hay datos
+                document.getElementById("historial").innerHTML = "";
+                document.getElementById("resultadosPanel").style.display = "none";
+                document.getElementById("chartWrapper").style.display = "none";
             }
         });
 
@@ -334,8 +381,81 @@
             }
         });
 
+        // ==========================================
+        // 1. GENERADOR DE PDF CORREGIDO
+        // ==========================================
         document.getElementById("btnPdf").addEventListener("click", () => {
-            html2pdf().set({ margin: 10, filename: 'Reporte_Clinico.pdf', html2canvas: { scale: 2 }, jsPDF: { format: 'a4', orientation: 'portrait' } }).from(document.getElementById("app-content")).save();
+            // Ocultamos elementos temporalmente antes de generar PDF
+            const elementosOcultar = document.querySelectorAll('.no-print');
+            elementosOcultar.forEach(el => el.style.display = 'none');
+            
+            const element = document.getElementById("app-content");
+            
+            const opt = {
+                margin:       10,
+                filename:     'Reporte_Clinico.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                // windowWidth congela la escala como si fuera un móvil/tablet para que el grid no se vuelva loco
+                html2canvas:  { scale: 2, windowWidth: 600, useCORS: true }, 
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Volvemos a mostrar los botones tras la descarga
+                elementosOcultar.forEach(el => el.style.display = '');
+            });
+        });
+
+        // ==========================================
+        // 2. EXPORTAR / RESPALDAR DATOS (JSON)
+        // ==========================================
+        document.getElementById("btnExport").addEventListener("click", () => {
+            if (registros.length === 0) return alert("No hay datos para respaldar.");
+            // Limpiamos los ID de Firebase para el backup
+            const datosLimpios = registros.map(({id, ...resto}) => resto);
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datosLimpios));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "Respaldo_Diario_Ciclo.json");
+            dlAnchorElem.click();
+        });
+
+        // ==========================================
+        // 3. RESTAURAR DATOS (JSON)
+        // ==========================================
+        document.getElementById("btnImport").addEventListener("click", () => {
+            document.getElementById("inputFile").click();
+        });
+
+        document.getElementById("inputFile").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const datosImportados = JSON.parse(event.target.result);
+                    if (Array.isArray(datosImportados)) {
+                        if(!confirm(`¿Estás segura de restaurar ${datosImportados.length} ciclos?`)) return;
+                        
+                        // Guardar en Firebase uno por uno
+                        for (let reg of datosImportados) {
+                            // Evitar duplicados por fecha exacta de inicio
+                            if(!registros.some(r => r.inicio === reg.inicio)) {
+                                await push(registrosRef, reg);
+                            }
+                        }
+                        alert("Datos restaurados con éxito.");
+                    } else {
+                        alert("El archivo no tiene el formato correcto.");
+                    }
+                } catch (err) {
+                    alert("Error al leer el archivo de respaldo.");
+                }
+                // Limpiar el input para permitir volver a cargar el mismo archivo si es necesario
+                e.target.value = '';
+            };
+            reader.readAsText(file);
         });
     </script>
 </body>
