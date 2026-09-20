@@ -87,7 +87,7 @@
         .btn-delete { color: #EF4444; }
         .btn-delete:hover { background: #FEE2E2; }
 
-        /* PLANTILLA PDF (Diseño limpio para foto) */
+        /* PLANTILLA PDF */
         #pdf-template {
             display: none; 
             width: 100%;
@@ -250,6 +250,33 @@
         let registros = [];
         let chartInstancia = null; 
         let modoEdicionId = null; 
+
+        // =========================================================
+        // BORRADOR AUTOMÁTICO (RECUPERAR DATOS AL ABRIR)
+        // =========================================================
+        window.addEventListener("DOMContentLoaded", () => {
+            if (localStorage.getItem("draft_fechaInicio")) document.getElementById("fechaInicio").value = localStorage.getItem("draft_fechaInicio");
+            if (localStorage.getItem("draft_fechaFin")) document.getElementById("fechaFin").value = localStorage.getItem("draft_fechaFin");
+            if (localStorage.getItem("draft_tempBasal")) document.getElementById("tempBasal").value = localStorage.getItem("draft_tempBasal");
+            if (localStorage.getItem("draft_intimidad")) document.getElementById("intimidad").checked = JSON.parse(localStorage.getItem("draft_intimidad"));
+            if (localStorage.getItem("draft_intimidadFecha")) document.getElementById("intimidadFecha").value = localStorage.getItem("draft_intimidadFecha");
+        });
+
+        // Guardar automáticamente cada vez que el usuario escriba algo
+        ["fechaInicio", "fechaFin", "tempBasal", "intimidad", "intimidadFecha"].forEach(id => {
+            document.getElementById(id).addEventListener("input", (e) => {
+                const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+                localStorage.setItem("draft_" + id, val);
+            });
+        });
+
+        function limpiarBorrador() {
+            localStorage.removeItem("draft_fechaInicio");
+            localStorage.removeItem("draft_fechaFin");
+            localStorage.removeItem("draft_tempBasal");
+            localStorage.removeItem("draft_intimidad");
+            localStorage.removeItem("draft_intimidadFecha");
+        }
 
         function formatearFecha(fechaStr, formatoCorto = false) {
             if (!fechaStr) return '--';
@@ -426,11 +453,13 @@
                 await push(registrosRef, nuevoRegistro);
             }
             
+            // Limpiar formulario y borrar el borrador automático al guardar con éxito
             document.getElementById("fechaInicio").value = "";
             document.getElementById("fechaFin").value = "";
             document.getElementById("tempBasal").value = "";
             document.getElementById("intimidad").checked = false;
             document.getElementById("intimidadFecha").value = "";
+            limpiarBorrador();
         });
 
         onValue(registrosRef, (snapshot) => {
@@ -509,16 +538,12 @@
                 tbody.appendChild(tr);
             }
 
-            // --- EL TRUCO ---
-            // 1. Ocultar la app y mostrar la tabla de frente
             appUI.style.display = "none";
             controlesUI.style.display = "none";
             
-            // 2. Limpiar restricciones del body para que el celular no corte nada
             document.body.style.overflow = "visible";
             document.body.style.background = "#ffffff";
             
-            // 3. Mostrar el reporte y asegurar que estemos hasta arriba
             template.style.display = "block";
             window.scrollTo(0, 0);
 
@@ -530,11 +555,8 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 4. Damos 800 milisegundos para que el celular "dibuje" la tabla antes de la foto
             setTimeout(() => {
                 html2pdf().set(opt).from(template).save().then(() => {
-                    
-                    // 5. Devolver todo a la normalidad
                     template.style.display = "none";
                     appUI.style.display = "";
                     controlesUI.style.display = "";
