@@ -61,7 +61,7 @@
 
         .results { margin-top: 35px; display: none; }
         .cards-grid { display: grid; gap: 15px; }
-        .result-card { background: var(--card-bg); border: 1px solid var(--border-light); padding: 20px; border-radius: 16px; position: relative; overflow: hidden; page-break-inside: avoid; }
+        .result-card { background: var(--card-bg); border: 1px solid var(--border-light); padding: 20px; border-radius: 16px; position: relative; overflow: hidden; }
         .result-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
         .card-period::before { background: var(--color-period); }
         .card-ovulation::before { background: var(--color-ovulation); }
@@ -71,10 +71,10 @@
         .result-card p { font-size: 18px; font-weight: 700; color: var(--text-main); }
         .result-card small { font-size: 13px; color: var(--text-muted); display: block; margin-top: 6px; }
 
-        .chart-container { background: #FFF; border: 1px solid var(--border-light); border-radius: 16px; padding: 15px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: none; page-break-inside: avoid; }
+        .chart-container { background: #FFF; border: 1px solid var(--border-light); border-radius: 16px; padding: 15px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: none; }
 
         #historial { list-style: none; }
-        .historial-item { border: 1px solid var(--border-light); margin-bottom: 12px; padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px; page-break-inside: avoid; }
+        .historial-item { border: 1px solid var(--border-light); margin-bottom: 12px; padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px; }
         .hist-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-light); padding-bottom: 8px; margin-bottom: 4px; }
         .hist-date { font-weight: 700; font-size: 15px; }
         .hist-badge { background: #FCE7F3; color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
@@ -82,56 +82,79 @@
         
         .btn-delete { background: transparent; border: none; font-size: 18px; cursor: pointer; color: #EF4444; padding: 4px; border-radius: 8px; transition: 0.2s; }
         .btn-delete:hover { background: #FEE2E2; }
+
+        /* =========================================================
+           ESTILOS ESPECÍFICOS PARA LA PLANTILLA DEL PDF (OCULTA EN WEB)
+           ========================================================= */
+        #pdf-template {
+            display: none; /* Siempre oculto en la web */
+            background: #fff;
+            padding: 20px;
+            color: #000;
+            font-family: 'Inter', sans-serif;
+        }
+        .pdf-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #E5E7EB; padding-bottom: 15px; }
+        .pdf-header h1 { font-size: 26px; color: #111827; margin-bottom: 5px; }
+        .pdf-header p { font-size: 14px; color: #6B7280; }
+        
+        .pdf-proyecciones { display: flex; gap: 10px; margin-bottom: 30px; text-align: center; }
+        .pdf-box { flex: 1; border: 1px solid #E5E7EB; border-radius: 8px; padding: 15px; background: #F9FAFB; }
+        .pdf-box h4 { font-size: 12px; color: #6B7280; text-transform: uppercase; margin-bottom: 8px; }
+        .pdf-box p { font-size: 16px; font-weight: bold; color: #111827; }
+        
+        .pdf-section-title { font-size: 16px; font-weight: bold; color: #111827; margin-bottom: 15px; border-bottom: 1px solid #E5E7EB; padding-bottom: 5px; }
+        
+        .pdf-chart-container { text-align: center; margin-bottom: 30px; }
+        .pdf-chart-container img { max-width: 100%; height: auto; border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px; }
+        
+        .pdf-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+        .pdf-table th, .pdf-table td { border: 1px solid #E5E7EB; padding: 10px 12px; text-align: left; }
+        .pdf-table th { background-color: #F3F4F6; color: #374151; font-weight: 600; }
+        .pdf-table tr:nth-child(even) { background-color: #F9FAFB; }
     </style>
 </head>
 <body>
 
-    <div class="app-container" id="app-content">
+    <!-- ================= INTERFAZ NORMAL (APP) ================= -->
+    <div class="app-container" id="app-ui">
         <header>
             <h1>Diario de Ciclo</h1>
-            <p id="subtituloHeader">Control inteligente y proyecciones</p>
-            <!-- Esta fecha solo será visible al exportar a PDF -->
-            <p id="fechaReportePdf" style="display: none; font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 8px;"></p>
+            <p>Control inteligente y proyecciones</p>
         </header>
         
-        <!-- ENVOLTORIO "no-print" PARA OCULTAR LA CALCULADORA EN EL PDF -->
-        <div class="no-print">
-            <div class="section-title">Registro Actual</div>
-            <div class="grid-2">
-                <div class="input-group">
-                    <label for="fechaInicio">Inició el:</label>
-                    <input type="date" id="fechaInicio" required>
-                </div>
-                <div class="input-group">
-                    <label for="fechaFin">Terminó el (Fin):</label>
-                    <input type="date" id="fechaFin">
-                </div>
+        <div class="section-title">Registro Actual</div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label for="fechaInicio">Inició el:</label>
+                <input type="date" id="fechaInicio" required>
             </div>
-            
-            <div class="section-title">Datos Biomédicos</div>
-            <div class="grid-2">
-                <div class="input-group">
-                    <label for="duracionCiclo">Ciclo Auto (Días):</label>
-                    <input type="number" id="duracionCiclo" value="28" readonly style="color: var(--text-muted); cursor: not-allowed; background: #E5E7EB;">
-                </div>
-                <div class="input-group">
-                    <label for="tempBasal">Temp. Basal (°C):</label>
-                    <input type="number" id="tempBasal" step="0.1" placeholder="Ej: 36.5">
-                </div>
+            <div class="input-group">
+                <label for="fechaFin">Terminó el (Fin):</label>
+                <input type="date" id="fechaFin">
             </div>
-
-            <label class="checkbox-group" for="intimidad">
-                <span>❤️✨</span>
-                <input type="checkbox" id="intimidad">
-            </label>
-
-            <button class="btn-primary" id="btnCalcular">Registrar y Analizar</button>
         </div>
-        <!-- FIN ÁREA A OCULTAR -->
+        
+        <div class="section-title">Datos Biomédicos</div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label for="duracionCiclo">Ciclo Auto (Días):</label>
+                <input type="number" id="duracionCiclo" value="28" readonly style="color: var(--text-muted); cursor: not-allowed; background: #E5E7EB;">
+            </div>
+            <div class="input-group">
+                <label for="tempBasal">Temp. Basal (°C):</label>
+                <input type="number" id="tempBasal" step="0.1" placeholder="Ej: 36.5">
+            </div>
+        </div>
 
-        <!-- SECCIÓN DE RESULTADOS (Esto es lo que compone el PDF) -->
+        <label class="checkbox-group" for="intimidad">
+            <span>❤️✨</span>
+            <input type="checkbox" id="intimidad">
+        </label>
+
+        <button class="btn-primary" id="btnCalcular">Registrar y Analizar</button>
+
         <div class="results" id="resultadosPanel">
-            <div class="section-title" style="margin-top: 20px;">Proyecciones del Mes</div>
+            <div class="section-title" style="margin-top: 0;">Proyecciones del Mes</div>
             <div class="cards-grid">
                 <div class="result-card card-period">
                     <h3>🩸 Próxima Regla</h3>
@@ -162,8 +185,8 @@
         </div>
     </div>
 
-    <!-- Panel de controles inferiores (No se verán en el PDF) -->
-    <div class="app-container no-print" style="padding-top: 0; box-shadow: none; background: transparent; padding-bottom: 40px;">
+    <!-- Panel de controles inferiores -->
+    <div class="app-container" style="padding-top: 0; box-shadow: none; background: transparent; padding-bottom: 40px;">
         <button class="btn-primary btn-pdf" id="btnPdf">📄 Descargar Reporte de Ciclos</button>
         
         <div class="actions-grid">
@@ -172,6 +195,54 @@
         </div>
         <input type="file" id="inputFile" accept=".json" style="display: none;">
     </div>
+
+
+    <!-- ================= PLANTILLA OCULTA PARA EL PDF ================= -->
+    <div id="pdf-template">
+        <div class="pdf-header">
+            <h1>Reporte Clínico de Ciclos</h1>
+            <p id="pdfFechaGeneracion"></p>
+        </div>
+
+        <div class="pdf-section-title">Proyecciones Actuales</div>
+        <div class="pdf-proyecciones">
+            <div class="pdf-box" style="border-top: 3px solid #F43F5E;">
+                <h4>🩸 Próxima Regla</h4>
+                <p id="pdfValRegla">--</p>
+            </div>
+            <div class="pdf-box" style="border-top: 3px solid #8B5CF6;">
+                <h4>🥚 Ovulación</h4>
+                <p id="pdfValOvu">--</p>
+            </div>
+            <div class="pdf-box" style="border-top: 3px solid #F59E0B;">
+                <h4>⚠️ Ventana Fértil</h4>
+                <p id="pdfValFertil">--</p>
+            </div>
+        </div>
+
+        <div class="pdf-section-title">Análisis Visual del Ciclo</div>
+        <div class="pdf-chart-container">
+            <!-- La imagen de la gráfica se inyectará aquí -->
+            <img id="pdfChartImage" src="" alt="Gráfica de ciclos" style="display: none;">
+        </div>
+
+        <div class="pdf-section-title">Historial Clínico</div>
+        <table class="pdf-table">
+            <thead>
+                <tr>
+                    <th>Fecha de Inicio</th>
+                    <th>Fecha de Fin</th>
+                    <th>Días Sangrado</th>
+                    <th>Temp. Basal</th>
+                    <th>Notas</th>
+                </tr>
+            </thead>
+            <tbody id="pdfTableBody">
+                <!-- Los registros de la tabla se inyectarán aquí -->
+            </tbody>
+        </table>
+    </div>
+    <!-- ============================================================== -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -199,8 +270,11 @@
         let registros = [];
         let chartInstancia = null; 
 
-        function formatearFecha(fechaStr) {
-            const opciones = { day: 'numeric', month: 'short' };
+        function formatearFecha(fechaStr, formatoCorto = false) {
+            if (!fechaStr) return '--';
+            const opciones = formatoCorto 
+                ? { day: 'numeric', month: 'short', year: 'numeric' } 
+                : { day: 'numeric', month: 'short' };
             return new Date(fechaStr + 'T12:00:00').toLocaleDateString('es-ES', opciones);
         }
 
@@ -280,7 +354,7 @@
                 let html = `
                     <div class="hist-header">
                         <div>
-                            <span class="hist-date">${new Date(reg.inicio + 'T12:00:00').toLocaleDateString('es-ES', {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                            <span class="hist-date">${formatearFecha(reg.inicio, true)}</span>
                             <span class="hist-badge">Auto</span>
                         </div>
                         <button class="btn-delete no-print" data-id="${reg.id}" title="Borrar ciclo">🗑️</button>
@@ -375,43 +449,72 @@
             }
         });
 
-        // GENERACIÓN DE PDF MEJORADA
+        // =========================================================================
+        // LÓGICA PARA GENERAR EL PDF ORDENADO (TABLA CLÍNICA)
+        // =========================================================================
         document.getElementById("btnPdf").addEventListener("click", () => {
             if (registros.length === 0) return alert("No hay datos para generar el reporte.");
             
-            // 1. Ocultar los elementos de ingreso de datos
-            const elementosOcultar = document.querySelectorAll('.no-print');
-            elementosOcultar.forEach(el => el.style.display = 'none');
+            // 1. Llenar la fecha de generación
+            const hoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+            document.getElementById('pdfFechaGeneracion').textContent = `Generado el: ${hoy}`;
+
+            // 2. Pasar las proyecciones al PDF
+            document.getElementById('pdfValRegla').textContent = document.getElementById('resProximo').textContent;
+            document.getElementById('pdfValOvu').textContent = document.getElementById('resOvulacion').textContent;
+            document.getElementById('pdfValFertil').textContent = document.getElementById('resFertil').textContent;
+
+            // 3. Pasar la gráfica como imagen (para que el PDF no la rompa)
+            if (registros.length >= 2) {
+                const canvas = document.getElementById('graficoCiclos');
+                const imgData = canvas.toDataURL("image/png");
+                const imgElement = document.getElementById('pdfChartImage');
+                imgElement.src = imgData;
+                imgElement.style.display = 'inline-block';
+            } else {
+                document.getElementById('pdfChartImage').style.display = 'none';
+            }
+
+            // 4. Llenar la tabla del historial
+            const tbody = document.getElementById('pdfTableBody');
+            tbody.innerHTML = ''; // Limpiar la tabla antes de llenarla
             
-            // 2. Modificar el header para el PDF
-            const subtitulo = document.getElementById('subtituloHeader');
-            const fechaPdf = document.getElementById('fechaReportePdf');
-            
-            subtitulo.style.display = 'none';
-            fechaPdf.style.display = 'block';
-            
-            const hoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-            fechaPdf.textContent = `Reporte generado el ${hoy}`;
-            
-            // 3. Capturar el contenedor
-            const element = document.getElementById("app-content");
-            
-            // 4. Configurar la librería para que parezca un reporte A4 elegante
+            registros.forEach(reg => {
+                const tr = document.createElement('tr');
+                const fInicio = formatearFecha(reg.inicio, true);
+                const fFin = reg.fin ? formatearFecha(reg.fin, true) : '--';
+                const temp = reg.temp ? reg.temp + ' °C' : '--';
+                const notas = reg.intimidad ? '❤️✨' : '';
+                
+                tr.innerHTML = `
+                    <td>${fInicio}</td>
+                    <td>${fFin}</td>
+                    <td>${reg.diasSangrado}</td>
+                    <td>${temp}</td>
+                    <td>${notas}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // 5. Mostrar la plantilla temporalmente para que html2pdf la capture
+            const template = document.getElementById('pdf-template');
+            template.style.display = 'block';
+
             const opt = {
-                margin:       [15, 15, 15, 15], // Márgenes amplios
-                filename:     'Reporte_Ciclos.pdf',
+                margin:       15, // Márgenes de 15mm
+                filename:     'Reporte_Clinico_Ciclos.pdf',
                 image:        { type: 'jpeg', quality: 1.0 },
-                html2canvas:  { scale: 2, windowWidth: 650, useCORS: true }, 
+                html2canvas:  { scale: 2, useCORS: true }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 5. Generar y restaurar todo a la normalidad
-            html2pdf().set(opt).from(element).save().then(() => {
-                elementosOcultar.forEach(el => el.style.display = '');
-                subtitulo.style.display = 'block';
-                fechaPdf.style.display = 'none';
+            // 6. Generar el PDF y luego ocultar la plantilla de nuevo
+            html2pdf().set(opt).from(template).save().then(() => {
+                template.style.display = 'none';
             });
         });
+
+        // =========================================================================
 
         document.getElementById("btnExport").addEventListener("click", () => {
             if (registros.length === 0) return alert("No hay datos para respaldar.");
