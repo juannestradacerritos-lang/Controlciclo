@@ -27,7 +27,7 @@
         }
 
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { background-color: var(--bg-app); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 20px 15px; min-height: 100vh; }
+        body { background-color: var(--bg-app); color: var(--text-main); display: flex; flex-direction: column; align-items: center; padding: 20px 15px; min-height: 100vh; overflow-x: hidden; }
         
         .app-container { background: var(--card-bg); max-width: 500px; width: 100%; padding: 30px 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); margin-bottom: 20px; }
         
@@ -84,33 +84,29 @@
         .btn-delete:hover { background: #FEE2E2; }
 
         /* =========================================================
-           ESTILOS ESPECÍFICOS PARA LA PLANTILLA DEL PDF (OCULTA EN WEB)
+           PLANTILLA PDF: SOLUCIÓN DEFINITIVA HOJA EN BLANCO
            ========================================================= */
         #pdf-template {
-            display: none; /* Siempre oculto en la web */
+            display: none; /* Estará oculto hasta el momento exacto de imprimir */
+            width: 100%;
+            max-width: 800px;
             background: #fff;
             padding: 20px;
-            color: #000;
+            color: #111827;
             font-family: 'Inter', sans-serif;
         }
-        .pdf-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #E5E7EB; padding-bottom: 15px; }
-        .pdf-header h1 { font-size: 26px; color: #111827; margin-bottom: 5px; }
-        .pdf-header p { font-size: 14px; color: #6B7280; }
         
-        .pdf-proyecciones { display: flex; gap: 10px; margin-bottom: 30px; text-align: center; }
-        .pdf-box { flex: 1; border: 1px solid #E5E7EB; border-radius: 8px; padding: 15px; background: #F9FAFB; }
-        .pdf-box h4 { font-size: 12px; color: #6B7280; text-transform: uppercase; margin-bottom: 8px; }
-        .pdf-box p { font-size: 16px; font-weight: bold; color: #111827; }
+        .pdf-header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #E5E7EB; padding-bottom: 15px; }
+        .pdf-header h1 { font-size: 26px; color: #111827; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .pdf-header p { font-size: 14px; color: #6B7280; font-weight: 500; }
         
-        .pdf-section-title { font-size: 16px; font-weight: bold; color: #111827; margin-bottom: 15px; border-bottom: 1px solid #E5E7EB; padding-bottom: 5px; }
+        .pdf-section-title { font-size: 15px; font-weight: 700; color: #374151; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
         
-        .pdf-chart-container { text-align: center; margin-bottom: 30px; }
-        .pdf-chart-container img { max-width: 100%; height: auto; border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px; }
-        
-        .pdf-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
-        .pdf-table th, .pdf-table td { border: 1px solid #E5E7EB; padding: 10px 12px; text-align: left; }
-        .pdf-table th { background-color: #F3F4F6; color: #374151; font-weight: 600; }
+        .pdf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .pdf-table th, .pdf-table td { border: 1px solid #E5E7EB; padding: 12px 10px; text-align: center; }
+        .pdf-table th { background-color: #F3F4F6; color: #374151; font-weight: 700; text-transform: uppercase; font-size: 11px; }
         .pdf-table tr:nth-child(even) { background-color: #F9FAFB; }
+        .pdf-table td:first-child { font-weight: 600; }
     </style>
 </head>
 <body>
@@ -186,7 +182,7 @@
     </div>
 
     <!-- Panel de controles inferiores -->
-    <div class="app-container" style="padding-top: 0; box-shadow: none; background: transparent; padding-bottom: 40px;">
+    <div class="app-container" id="controles-inferiores" style="padding-top: 0; box-shadow: none; background: transparent; padding-bottom: 40px;">
         <button class="btn-primary btn-pdf" id="btnPdf">📄 Descargar Reporte de Ciclos</button>
         
         <div class="actions-grid">
@@ -197,52 +193,31 @@
     </div>
 
 
-    <!-- ================= PLANTILLA OCULTA PARA EL PDF ================= -->
+    <!-- ================= PLANTILLA PDF: TABLA CLÍNICA ================= -->
     <div id="pdf-template">
         <div class="pdf-header">
-            <h1>Reporte Clínico de Ciclos</h1>
+            <h1>Reporte de Ciclos</h1>
             <p id="pdfFechaGeneracion"></p>
         </div>
 
-        <div class="pdf-section-title">Proyecciones Actuales</div>
-        <div class="pdf-proyecciones">
-            <div class="pdf-box" style="border-top: 3px solid #F43F5E;">
-                <h4>🩸 Próxima Regla</h4>
-                <p id="pdfValRegla">--</p>
-            </div>
-            <div class="pdf-box" style="border-top: 3px solid #8B5CF6;">
-                <h4>🥚 Ovulación</h4>
-                <p id="pdfValOvu">--</p>
-            </div>
-            <div class="pdf-box" style="border-top: 3px solid #F59E0B;">
-                <h4>⚠️ Ventana Fértil</h4>
-                <p id="pdfValFertil">--</p>
-            </div>
-        </div>
-
-        <div class="pdf-section-title">Análisis Visual del Ciclo</div>
-        <div class="pdf-chart-container">
-            <!-- La imagen de la gráfica se inyectará aquí -->
-            <img id="pdfChartImage" src="" alt="Gráfica de ciclos" style="display: none;">
-        </div>
-
-        <div class="pdf-section-title">Historial Clínico</div>
+        <div class="pdf-section-title">Historial Detallado</div>
         <table class="pdf-table">
             <thead>
                 <tr>
-                    <th>Fecha de Inicio</th>
-                    <th>Fecha de Fin</th>
-                    <th>Días Sangrado</th>
-                    <th>Temp. Basal</th>
+                    <th>Inicio de Regla</th>
+                    <th>Sangrado</th>
+                    <th>Duración Ciclo</th>
+                    <th>Ventana Fértil (Ovulación)</th>
+                    <th>Temp</th>
                     <th>Notas</th>
                 </tr>
             </thead>
             <tbody id="pdfTableBody">
-                <!-- Los registros de la tabla se inyectarán aquí -->
+                <!-- Los registros se inyectarán aquí -->
             </tbody>
         </table>
     </div>
-    <!-- ============================================================== -->
+    <!-- ================================================================ -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -450,67 +425,78 @@
         });
 
         // =========================================================================
-        // LÓGICA PARA GENERAR EL PDF ORDENADO (TABLA CLÍNICA)
+        // LÓGICA INFALIBLE PARA GENERAR EL PDF
         // =========================================================================
         document.getElementById("btnPdf").addEventListener("click", () => {
             if (registros.length === 0) return alert("No hay datos para generar el reporte.");
             
-            // 1. Llenar la fecha de generación
+            // 1. Llenar fechas y datos
             const hoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' });
             document.getElementById('pdfFechaGeneracion').textContent = `Generado el: ${hoy}`;
 
-            // 2. Pasar las proyecciones al PDF
-            document.getElementById('pdfValRegla').textContent = document.getElementById('resProximo').textContent;
-            document.getElementById('pdfValOvu').textContent = document.getElementById('resOvulacion').textContent;
-            document.getElementById('pdfValFertil').textContent = document.getElementById('resFertil').textContent;
-
-            // 3. Pasar la gráfica como imagen (para que el PDF no la rompa)
-            if (registros.length >= 2) {
-                const canvas = document.getElementById('graficoCiclos');
-                const imgData = canvas.toDataURL("image/png");
-                const imgElement = document.getElementById('pdfChartImage');
-                imgElement.src = imgData;
-                imgElement.style.display = 'inline-block';
-            } else {
-                document.getElementById('pdfChartImage').style.display = 'none';
-            }
-
-            // 4. Llenar la tabla del historial
             const tbody = document.getElementById('pdfTableBody');
-            tbody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+            tbody.innerHTML = ''; 
             
-            registros.forEach(reg => {
+            let promedioGeneral = actualizarPromedioInteligente();
+
+            for (let i = 0; i < registros.length; i++) {
+                let reg = registros[i];
+                let duracionCiclo = promedioGeneral;
+                let textoDuracion = `${promedioGeneral} días (est.)`;
+
+                if (i < registros.length - 1) {
+                    let actual = new Date(reg.inicio + 'T12:00:00');
+                    let anterior = new Date(registros[i+1].inicio + 'T12:00:00');
+                    duracionCiclo = Math.ceil(Math.abs(actual - anterior) / (1000 * 60 * 60 * 24));
+                    textoDuracion = `${duracionCiclo} días`;
+                } else if (registros.length === 1) {
+                    textoDuracion = `--`;
+                }
+
+                const fechaObj = new Date(reg.inicio + 'T12:00:00');
+                const prox = new Date(fechaObj); prox.setDate(fechaObj.getDate() + duracionCiclo);
+                const ovu = new Date(prox); ovu.setDate(prox.getDate() - 14);
+                const fIni = new Date(ovu); fIni.setDate(ovu.getDate() - 5);
+                const fFin = new Date(ovu); fFin.setDate(ovu.getDate() + 1);
+
+                const optCorto = { day: 'numeric', month: 'short' };
+                let txtOvu = `${fIni.toLocaleDateString('es-ES', optCorto)} al ${fFin.toLocaleDateString('es-ES', optCorto)} (Ovu: ${ovu.toLocaleDateString('es-ES', {day: 'numeric'})})`;
+
                 const tr = document.createElement('tr');
-                const fInicio = formatearFecha(reg.inicio, true);
-                const fFin = reg.fin ? formatearFecha(reg.fin, true) : '--';
-                const temp = reg.temp ? reg.temp + ' °C' : '--';
-                const notas = reg.intimidad ? '❤️✨' : '';
-                
                 tr.innerHTML = `
-                    <td>${fInicio}</td>
-                    <td>${fFin}</td>
+                    <td>${formatearFecha(reg.inicio, true)}</td>
                     <td>${reg.diasSangrado}</td>
-                    <td>${temp}</td>
-                    <td>${notas}</td>
+                    <td>${textoDuracion}</td>
+                    <td>${txtOvu}</td>
+                    <td>${reg.temp ? reg.temp : '--'}</td>
+                    <td>${reg.intimidad ? '❤️✨' : ''}</td>
                 `;
                 tbody.appendChild(tr);
-            });
+            }
 
-            // 5. Mostrar la plantilla temporalmente para que html2pdf la capture
+            // 2. Elementos del DOM a manipular
+            const appUi = document.getElementById('app-ui');
+            const controlesInferiores = document.getElementById('controles-inferiores');
             const template = document.getElementById('pdf-template');
+            
+            // 3. Ocultar la app y mostrar la plantilla (Evita el bug de pantalla en blanco)
+            appUi.style.display = 'none';
+            controlesInferiores.style.display = 'none';
             template.style.display = 'block';
 
             const opt = {
-                margin:       15, // Márgenes de 15mm
-                filename:     'Reporte_Clinico_Ciclos.pdf',
+                margin:       15, 
+                filename:     'Reporte_De_Ciclos.pdf',
                 image:        { type: 'jpeg', quality: 1.0 },
                 html2canvas:  { scale: 2, useCORS: true }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 6. Generar el PDF y luego ocultar la plantilla de nuevo
+            // 4. Generar el PDF y restaurar la app cuando termine
             html2pdf().set(opt).from(template).save().then(() => {
                 template.style.display = 'none';
+                appUi.style.display = 'block';
+                controlesInferiores.style.display = 'block';
             });
         });
 
