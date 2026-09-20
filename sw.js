@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ciclo-cache-v14'; // Subimos a v10 para forzar la actualización
+const CACHE_NAME = 'ciclo-cache-v15'; // Subimos a v10 para forzar la actualización
 
 // 1. SOLO obligamos a instalar los archivos locales seguros
 const urlsToCache = [
