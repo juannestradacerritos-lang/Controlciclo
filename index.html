@@ -43,7 +43,7 @@
         input[type="date"], input[type="number"] { width: 100%; padding: 14px; border: 1px solid var(--border-light); border-radius: 14px; font-size: 15px; background: var(--input-bg); outline: none; transition: 0.2s; }
         input:focus { border-color: var(--primary); background: #FFF; box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.1); }
         
-        .checkbox-group { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 20px; border: 1px solid var(--border-light); padding: 16px 20px; border-radius: 16px; cursor: pointer; transition: 0.2s; }
+        .checkbox-group { display: flex; align-items: center; justify-content: center; gap: 15px; border: 1px solid var(--border-light); padding: 16px 20px; border-radius: 16px; cursor: pointer; transition: 0.2s; height: 100%; }
         .checkbox-group:hover { border-color: var(--primary); background: #F9FAFB; }
         .checkbox-group span { font-size: 22px; }
         .checkbox-group input { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; margin: 0; }
@@ -80,14 +80,16 @@
         .hist-badge { background: #FCE7F3; color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
         .hist-detail { font-size: 14px; color: var(--text-muted); }
         
-        .btn-delete { background: transparent; border: none; font-size: 18px; cursor: pointer; color: #EF4444; padding: 4px; border-radius: 8px; transition: 0.2s; }
+        .action-buttons { display: flex; gap: 8px; }
+        .btn-icon { background: transparent; border: none; font-size: 18px; cursor: pointer; padding: 4px; border-radius: 8px; transition: 0.2s; }
+        .btn-edit { color: #3B82F6; }
+        .btn-edit:hover { background: #DBEAFE; }
+        .btn-delete { color: #EF4444; }
         .btn-delete:hover { background: #FEE2E2; }
 
-        /* =========================================================
-           PLANTILLA PDF: SOLUCIÓN DEFINITIVA HOJA EN BLANCO
-           ========================================================= */
+        /* PLANTILLA PDF (Diseño limpio para foto) */
         #pdf-template {
-            display: none; /* Estará oculto hasta el momento exacto de imprimir */
+            display: none; 
             width: 100%;
             max-width: 800px;
             background: #fff;
@@ -111,7 +113,6 @@
 </head>
 <body>
 
-    <!-- ================= INTERFAZ NORMAL (APP) ================= -->
     <div class="app-container" id="app-ui">
         <header>
             <h1>Diario de Ciclo</h1>
@@ -142,10 +143,16 @@
             </div>
         </div>
 
-        <label class="checkbox-group" for="intimidad">
-            <span>❤️✨</span>
-            <input type="checkbox" id="intimidad">
-        </label>
+        <div class="grid-2" style="margin-top: 15px;">
+            <label class="checkbox-group" for="intimidad">
+                <span>❤️✨</span>
+                <input type="checkbox" id="intimidad">
+            </label>
+            <div class="input-group">
+                <label for="intimidadFecha">Fecha de ❤️✨:</label>
+                <input type="date" id="intimidadFecha">
+            </div>
+        </div>
 
         <button class="btn-primary" id="btnCalcular">Registrar y Analizar</button>
 
@@ -192,8 +199,7 @@
         <input type="file" id="inputFile" accept=".json" style="display: none;">
     </div>
 
-
-    <!-- ================= PLANTILLA PDF: TABLA CLÍNICA ================= -->
+    <!-- PLANTILLA PDF -->
     <div id="pdf-template">
         <div class="pdf-header">
             <h1>Reporte de Ciclos</h1>
@@ -213,15 +219,14 @@
                 </tr>
             </thead>
             <tbody id="pdfTableBody">
-                <!-- Los registros se inyectarán aquí -->
+                <!-- Registros -->
             </tbody>
         </table>
     </div>
-    <!-- ================================================================ -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC4usCsv7vxYrqd_R3GefHecy1ZgPFivjU",
@@ -244,6 +249,7 @@
 
         let registros = [];
         let chartInstancia = null; 
+        let modoEdicionId = null; 
 
         function formatearFecha(fechaStr, formatoCorto = false) {
             if (!fechaStr) return '--';
@@ -332,12 +338,17 @@
                             <span class="hist-date">${formatearFecha(reg.inicio, true)}</span>
                             <span class="hist-badge">Auto</span>
                         </div>
-                        <button class="btn-delete no-print" data-id="${reg.id}" title="Borrar ciclo">🗑️</button>
+                        <div class="action-buttons">
+                            <button class="btn-icon btn-edit no-print" data-id="${reg.id}" title="Editar ciclo">✏️</button>
+                            <button class="btn-icon btn-delete no-print" data-id="${reg.id}" title="Borrar ciclo">🗑️</button>
+                        </div>
                     </div>
-                    <div class="hist-detail">🩸 Sangrado: ${reg.diasSangrado} ${reg.fin ? `(hasta ${formatearFecha(reg.fin)})` : ''}</div>
+                    <div class="hist-detail">🩸 Sangrado: ${reg.diasSangrado || '7'} ${reg.fin ? `(hasta ${formatearFecha(reg.fin)})` : ''}</div>
                 `;
                 if(reg.temp) html += `<div class="hist-detail">🌡️ Temp: <strong>${reg.temp}°C</strong></div>`;
-                if(reg.intimidad) html += `<div style="font-size: 16px; margin-top: 6px;">❤️✨</div>`;
+                if(reg.intimidad) {
+                    html += `<div style="font-size: 14px; margin-top: 6px;">❤️✨ ${reg.intimidadFecha ? `(El ${formatearFecha(reg.intimidadFecha, true)})` : ''}</div>`;
+                }
                 
                 li.innerHTML = html;
                 historialUI.appendChild(li);
@@ -348,6 +359,24 @@
                     if(confirm("¿Estás segura de eliminar este ciclo del historial?")) {
                         const id = e.target.getAttribute('data-id');
                         await remove(ref(db, 'registros_ciclo/' + id));
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    const reg = registros.find(r => r.id === id);
+                    if(reg) {
+                        document.getElementById("fechaInicio").value = reg.inicio || "";
+                        document.getElementById("fechaFin").value = reg.fin || "";
+                        document.getElementById("tempBasal").value = reg.temp || "";
+                        document.getElementById("intimidad").checked = reg.intimidad || false;
+                        document.getElementById("intimidadFecha").value = reg.intimidadFecha || "";
+                        
+                        modoEdicionId = id;
+                        document.getElementById("btnCalcular").textContent = "💾 Guardar Cambios";
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 });
             });
@@ -368,6 +397,41 @@
             document.getElementById("resFertil").textContent = `${fIni.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} al ${fFin.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
             document.getElementById("resultadosPanel").style.display = "block";
         }
+
+        document.getElementById("btnCalcular").addEventListener("click", async () => {
+            const fechaInicio = document.getElementById("fechaInicio").value;
+            const fechaFin = document.getElementById("fechaFin").value;
+            const temp = document.getElementById("tempBasal").value;
+            const intimidad = document.getElementById("intimidad").checked;
+            const intimidadFecha = document.getElementById("intimidadFecha").value;
+            
+            if (!fechaInicio) {
+                alert("Por favor ingresa la fecha de inicio de la regla.");
+                return;
+            }
+
+            const nuevoRegistro = {
+                inicio: fechaInicio,
+                fin: fechaFin,
+                temp: temp || null,
+                intimidad: intimidad,
+                intimidadFecha: intimidadFecha || null
+            };
+
+            if (modoEdicionId) {
+                await update(ref(db, 'registros_ciclo/' + modoEdicionId), nuevoRegistro);
+                modoEdicionId = null; 
+                document.getElementById("btnCalcular").textContent = "Registrar y Analizar"; 
+            } else {
+                await push(registrosRef, nuevoRegistro);
+            }
+            
+            document.getElementById("fechaInicio").value = "";
+            document.getElementById("fechaFin").value = "";
+            document.getElementById("tempBasal").value = "";
+            document.getElementById("intimidad").checked = false;
+            document.getElementById("intimidadFecha").value = "";
+        });
 
         onValue(registrosRef, (snapshot) => {
             const data = snapshot.val();
@@ -392,155 +456,95 @@
             }
         });
 
-        document.getElementById("btnCalcular").addEventListener("click", async () => {
-            const fechaInput = document.getElementById("fechaInicio").value;
-            const fechaFinInput = document.getElementById("fechaFin").value;
-            const tempInput = document.getElementById("tempBasal").value;
-            const intimidadInput = document.getElementById("intimidad").checked;
-            
-            if(!fechaInput) return alert("Debes ingresar el primer día de regla.");
-            if(registros.some(r => r.inicio === fechaInput)) return alert("Esta fecha ya está registrada.");
-
-            let diasSangrado = "En curso";
-            if(fechaFinInput) {
-                if(new Date(fechaFinInput) < new Date(fechaInput)) return alert("La fecha fin no puede ser anterior al inicio.");
-                diasSangrado = (Math.ceil(Math.abs(new Date(fechaFinInput) - new Date(fechaInput)) / (1000 * 60 * 60 * 24)) + 1) + " días";
-            }
-
-            try {
-                await push(registrosRef, {
-                    inicio: fechaInput,
-                    fin: fechaFinInput,
-                    diasSangrado: diasSangrado,
-                    temp: tempInput,
-                    intimidad: intimidadInput,
-                    creado: Date.now()
-                });
-
-                document.getElementById("tempBasal").value = "";
-                document.getElementById("intimidad").checked = false;
-            } catch (err) {
-                alert("Error al guardar en la nube: " + err.message);
-            }
-        });
-
-        // =========================================================================
-        // LÓGICA INFALIBLE PARA GENERAR EL PDF
-        // =========================================================================
+        // =========================================================
+        // FUNCIÓN PDF: EL TRUCO MAESTRO PARA MÓVILES
+        // =========================================================
         document.getElementById("btnPdf").addEventListener("click", () => {
-            if (registros.length === 0) return alert("No hay datos para generar el reporte.");
+            const template = document.getElementById("pdf-template");
+            const tbody = document.getElementById("pdfTableBody");
+            const btn = document.getElementById("btnPdf");
             
-            // 1. Llenar fechas y datos
-            const hoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' });
-            document.getElementById('pdfFechaGeneracion').textContent = `Generado el: ${hoy}`;
+            const appUI = document.getElementById("app-ui");
+            const controlesUI = document.getElementById("controles-inferiores");
 
-            const tbody = document.getElementById('pdfTableBody');
-            tbody.innerHTML = ''; 
-            
-            let promedioGeneral = actualizarPromedioInteligente();
+            btn.textContent = "⏳ Procesando PDF...";
+            btn.style.pointerEvents = "none";
+
+            tbody.innerHTML = ""; 
+            const fechaHoy = new Date().toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' });
+            document.getElementById("pdfFechaGeneracion").textContent = `Generado el: ${fechaHoy}`;
 
             for (let i = 0; i < registros.length; i++) {
-                let reg = registros[i];
-                let duracionCiclo = promedioGeneral;
-                let textoDuracion = `${promedioGeneral} días (est.)`;
-
+                const reg = registros[i];
+                
+                let duracion = "--";
                 if (i < registros.length - 1) {
-                    let actual = new Date(reg.inicio + 'T12:00:00');
-                    let anterior = new Date(registros[i+1].inicio + 'T12:00:00');
-                    duracionCiclo = Math.ceil(Math.abs(actual - anterior) / (1000 * 60 * 60 * 24));
-                    textoDuracion = `${duracionCiclo} días`;
-                } else if (registros.length === 1) {
-                    textoDuracion = `--`;
+                    const actual = new Date(reg.inicio);
+                    const anterior = new Date(registros[i + 1].inicio);
+                    duracion = Math.ceil(Math.abs(actual - anterior) / (1000 * 60 * 60 * 24)) + " días";
                 }
-
+                
                 const fechaObj = new Date(reg.inicio + 'T12:00:00');
-                const prox = new Date(fechaObj); prox.setDate(fechaObj.getDate() + duracionCiclo);
+                const prox = new Date(fechaObj); prox.setDate(fechaObj.getDate() + 28); 
                 const ovu = new Date(prox); ovu.setDate(prox.getDate() - 14);
                 const fIni = new Date(ovu); fIni.setDate(ovu.getDate() - 5);
                 const fFin = new Date(ovu); fFin.setDate(ovu.getDate() + 1);
+                
+                const ventana = `${fIni.toLocaleDateString('es-ES', {day:'numeric', month:'short'})} al ${fFin.toLocaleDateString('es-ES', {day:'numeric', month:'short'})} (Ovu: ${ovu.getDate()})`;
 
-                const optCorto = { day: 'numeric', month: 'short' };
-                let txtOvu = `${fIni.toLocaleDateString('es-ES', optCorto)} al ${fFin.toLocaleDateString('es-ES', optCorto)} (Ovu: ${ovu.toLocaleDateString('es-ES', {day: 'numeric'})})`;
+                let notasPDF = "";
+                if (reg.intimidad) {
+                    notasPDF = "❤️ " + (reg.intimidadFecha ? formatearFecha(reg.intimidadFecha) : "");
+                }
 
-                const tr = document.createElement('tr');
+                const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>${formatearFecha(reg.inicio, true)}</td>
-                    <td>${reg.diasSangrado}</td>
-                    <td>${textoDuracion}</td>
-                    <td>${txtOvu}</td>
-                    <td>${reg.temp ? reg.temp : '--'}</td>
-                    <td>${reg.intimidad ? '❤️✨' : ''}</td>
+                    <td>${formatearFecha(reg.inicio)}</td>
+                    <td>7 días</td>
+                    <td>${duracion}</td>
+                    <td>${ventana}</td>
+                    <td>${reg.temp ? reg.temp + '°C' : '-'}</td>
+                    <td>${notasPDF}</td>
                 `;
                 tbody.appendChild(tr);
             }
 
-            // 2. Elementos del DOM a manipular
-            const appUi = document.getElementById('app-ui');
-            const controlesInferiores = document.getElementById('controles-inferiores');
-            const template = document.getElementById('pdf-template');
+            // --- EL TRUCO ---
+            // 1. Ocultar la app y mostrar la tabla de frente
+            appUI.style.display = "none";
+            controlesUI.style.display = "none";
             
-            // 3. Ocultar la app y mostrar la plantilla (Evita el bug de pantalla en blanco)
-            appUi.style.display = 'none';
-            controlesInferiores.style.display = 'none';
-            template.style.display = 'block';
+            // 2. Limpiar restricciones del body para que el celular no corte nada
+            document.body.style.overflow = "visible";
+            document.body.style.background = "#ffffff";
+            
+            // 3. Mostrar el reporte y asegurar que estemos hasta arriba
+            template.style.display = "block";
+            window.scrollTo(0, 0);
 
             const opt = {
-                margin:       15, 
+                margin:       [15, 15, 15, 15], 
                 filename:     'Reporte_De_Ciclos.pdf',
-                image:        { type: 'jpeg', quality: 1.0 },
-                html2canvas:  { scale: 2, useCORS: true }, 
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 4. Generar el PDF y restaurar la app cuando termine
-            html2pdf().set(opt).from(template).save().then(() => {
-                template.style.display = 'none';
-                appUi.style.display = 'block';
-                controlesInferiores.style.display = 'block';
-            });
-        });
-
-        // =========================================================================
-
-        document.getElementById("btnExport").addEventListener("click", () => {
-            if (registros.length === 0) return alert("No hay datos para respaldar.");
-            const datosLimpios = registros.map(({id, ...resto}) => resto);
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datosLimpios));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", "Respaldo_Diario_Ciclo.json");
-            dlAnchorElem.click();
-        });
-
-        document.getElementById("btnImport").addEventListener("click", () => {
-            document.getElementById("inputFile").click();
-        });
-
-        document.getElementById("inputFile").addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const datosImportados = JSON.parse(event.target.result);
-                    if (Array.isArray(datosImportados)) {
-                        if(!confirm(`¿Estás segura de restaurar ${datosImportados.length} ciclos?`)) return;
-                        
-                        for (let reg of datosImportados) {
-                            if(!registros.some(r => r.inicio === reg.inicio)) {
-                                await push(registrosRef, reg);
-                            }
-                        }
-                        alert("Datos restaurados con éxito.");
-                    } else {
-                        alert("El archivo no tiene el formato correcto.");
-                    }
-                } catch (err) {
-                    alert("Error al leer el archivo de respaldo.");
-                }
-                e.target.value = '';
-            };
-            reader.readAsText(file);
+            // 4. Damos 800 milisegundos para que el celular "dibuje" la tabla antes de la foto
+            setTimeout(() => {
+                html2pdf().set(opt).from(template).save().then(() => {
+                    
+                    // 5. Devolver todo a la normalidad
+                    template.style.display = "none";
+                    appUI.style.display = "";
+                    controlesUI.style.display = "";
+                    document.body.style.overflow = "";
+                    document.body.style.background = "";
+                    
+                    btn.textContent = "📄 Descargar Reporte de Ciclos";
+                    btn.style.pointerEvents = "auto";
+                });
+            }, 800);
         });
     </script>
 </body>
