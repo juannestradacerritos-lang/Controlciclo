@@ -247,22 +247,29 @@
             navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
         }
 
-        let registros = [];
+        // CARGAR DATOS OFFLINE AL INICIAR SI EXISTEN
+        let registros = JSON.parse(localStorage.getItem("offline_registros")) || [];
         let chartInstancia = null; 
         let modoEdicionId = null; 
 
-        // =========================================================
-        // BORRADOR AUTOMÁTICO (RECUPERAR DATOS AL ABRIR)
-        // =========================================================
         window.addEventListener("DOMContentLoaded", () => {
+            // Restaurar borradores
             if (localStorage.getItem("draft_fechaInicio")) document.getElementById("fechaInicio").value = localStorage.getItem("draft_fechaInicio");
             if (localStorage.getItem("draft_fechaFin")) document.getElementById("fechaFin").value = localStorage.getItem("draft_fechaFin");
             if (localStorage.getItem("draft_tempBasal")) document.getElementById("tempBasal").value = localStorage.getItem("draft_tempBasal");
             if (localStorage.getItem("draft_intimidad")) document.getElementById("intimidad").checked = JSON.parse(localStorage.getItem("draft_intimidad"));
             if (localStorage.getItem("draft_intimidadFecha")) document.getElementById("intimidadFecha").value = localStorage.getItem("draft_intimidadFecha");
+
+            // Mostrar el historial inmediatamente si no hay internet pero hay datos guardados
+            if (registros.length > 0) {
+                const ciclo = actualizarPromedioInteligente();
+                renderizarHistorial();
+                renderizarGrafico();
+                calcularProyecciones(registros[0].inicio, ciclo);
+            }
         });
 
-        // Guardar automáticamente cada vez que el usuario escriba algo
+        // Guardar borradores mientras escribes
         ["fechaInicio", "fechaFin", "tempBasal", "intimidad", "intimidadFecha"].forEach(id => {
             document.getElementById(id).addEventListener("input", (e) => {
                 const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
@@ -426,6 +433,11 @@
         }
 
         document.getElementById("btnCalcular").addEventListener("click", async () => {
+            if (!navigator.onLine) {
+                alert("Necesitas conexión a internet para registrar datos en la nube.");
+                return;
+            }
+
             const fechaInicio = document.getElementById("fechaInicio").value;
             const fechaFin = document.getElementById("fechaFin").value;
             const temp = document.getElementById("tempBasal").value;
@@ -453,7 +465,6 @@
                 await push(registrosRef, nuevoRegistro);
             }
             
-            // Limpiar formulario y borrar el borrador automático al guardar con éxito
             document.getElementById("fechaInicio").value = "";
             document.getElementById("fechaFin").value = "";
             document.getElementById("tempBasal").value = "";
@@ -462,10 +473,11 @@
             limpiarBorrador();
         });
 
+        // ESCUCHAR FIREBASE Y GUARDAR COPIA LOCAL AUTOMÁTICA
         onValue(registrosRef, (snapshot) => {
             const data = snapshot.val();
-            registros = [];
             if (data) {
+                registros = [];
                 Object.keys(data).forEach(key => {
                     let item = data[key];
                     item.id = key;
@@ -474,19 +486,24 @@
                 
                 registros.sort((a, b) => new Date(b.inicio) - new Date(a.inicio));
                 
+                // GUARDAMOS EL RESPALDO OFFLINE EN EL TELÉFONO
+                localStorage.setItem("offline_registros", JSON.stringify(registros));
+                
                 const ciclo = actualizarPromedioInteligente();
                 renderizarHistorial();
                 renderizarGrafico();
                 calcularProyecciones(registros[0].inicio, ciclo);
             } else {
+                // Si la base de datos está realmente vacía (no por falta de internet)
                 document.getElementById("historial").innerHTML = "";
                 document.getElementById("resultadosPanel").style.display = "none";
                 document.getElementById("chartWrapper").style.display = "none";
+                localStorage.removeItem("offline_registros");
             }
         });
 
         // =========================================================
-        // FUNCIÓN PDF: EL TRUCO MAESTRO PARA MÓVILES
+        // FUNCIÓN PDF
         // =========================================================
         document.getElementById("btnPdf").addEventListener("click", () => {
             const template = document.getElementById("pdf-template");
