@@ -12,9 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* =========================================================
-           DISEÑO CLÍNICO Y MODERNO (APP)
-           ========================================================= */
         :root {
             --primary: #F43F5E;
             --primary-hover: #E11D48;
@@ -41,18 +38,19 @@
         .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.2px; margin-bottom: 16px; margin-top: 30px; border-bottom: 2px solid var(--border-light); padding-bottom: 8px; }
         
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-        .input-group { display: flex; flex-direction: column; }
+        .input-group { display: flex; flex-direction: column; margin-bottom: 15px; }
         label { font-size: 13.5px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; }
-        input[type="date"], input[type="number"] { width: 100%; padding: 15px; border: 1.5px solid var(--border-light); border-radius: 16px; font-size: 15px; background: var(--input-bg); outline: none; transition: all 0.2s ease; color: var(--text-main); font-weight: 500; }
-        input:focus { border-color: var(--primary); background: #FFF; box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.1); }
+        input[type="date"], input[type="number"], select { width: 100%; padding: 15px; border: 1.5px solid var(--border-light); border-radius: 16px; font-size: 15px; background: var(--input-bg); outline: none; transition: all 0.2s ease; color: var(--text-main); font-weight: 500; appearance: none; }
+        input:focus, select:focus { border-color: var(--primary); background: #FFF; box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.1); }
         
-        .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 25px; border: 1.5px solid var(--border-light); padding: 20px; border-radius: 18px; background: var(--input-bg); transition: 0.2s; cursor: pointer; }
+        .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 15px; border: 1.5px solid var(--border-light); padding: 18px; border-radius: 18px; background: var(--input-bg); transition: 0.2s; cursor: pointer; flex: 1; margin-top: 10px; }
         .checkbox-container:hover { border-color: #D1D5DB; background: #F3F4F6; }
-        .checkbox-container span { font-size: 28px; }
-        .checkbox-container input { width: 26px; height: 26px; accent-color: var(--primary); cursor: pointer; }
+        .checkbox-container span { font-size: 24px; }
+        .checkbox-container input { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; }
 
-        .fechas-intimidad-box { background: #FFFFFF; border: 1.5px dashed #CBD5E1; padding: 20px; border-radius: 18px; margin-top: 15px; display: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); }
+        .box-desplegable { background: #FFFFFF; border: 1.5px dashed #CBD5E1; padding: 20px; border-radius: 18px; margin-top: 15px; display: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); }
         .fila-fecha-extra { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
+        
         .btn-add-fecha { background: rgba(16, 185, 129, 0.1); color: #059669; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 12px 16px; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; text-align: center; margin-top: 5px; }
         .btn-add-fecha:hover { background: rgba(16, 185, 129, 0.2); }
         .btn-remove-fecha { background: #FEE2E2; color: #EF4444; border: none; padding: 15px; border-radius: 14px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
@@ -65,9 +63,9 @@
         .btn-pdf:hover { background: #000; }
         
         .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .btn-export { background: #F3F4F6; color: #374151; border: 1.5px solid #D1D5DB; margin-top: 0; font-size: 14px; padding: 14px; box-shadow: none; }
+        .btn-export { background: #F3F4F6; color: #374151; border: 1.5px solid #D1D5DB; margin-top: 0; font-size: 14px; padding: 14px; box-shadow: none; border-radius: 14px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn-export:hover { background: #E5E7EB; transform: translateY(-2px); }
-        .btn-import { background: #F3F4F6; color: #374151; border: 1.5px solid #D1D5DB; margin-top: 0; font-size: 14px; padding: 14px; box-shadow: none; }
+        .btn-import { background: #F3F4F6; color: #374151; border: 1.5px solid #D1D5DB; margin-top: 0; font-size: 14px; padding: 14px; box-shadow: none; border-radius: 14px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn-import:hover { background: #E5E7EB; transform: translateY(-2px); }
 
         .results { margin-top: 40px; display: none; }
@@ -84,13 +82,13 @@
         .result-card small { font-size: 13.5px; color: var(--text-muted); display: block; margin-top: 8px; font-weight: 500; }
 
         .chart-container { background: #FFF; border: 1.5px solid var(--border-light); border-radius: 20px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: none; }
+        .chart-title { text-align: center; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 15px; text-transform: uppercase; }
 
         #historial { list-style: none; }
         .historial-item { border: 1.5px solid var(--border-light); margin-bottom: 15px; padding: 22px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; background: #FFF; box-shadow: 0 2px 4px rgba(0,0,0,0.01); transition: 0.2s; }
         .historial-item:hover { border-color: #D1D5DB; }
         .hist-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px dashed #E5E7EB; padding-bottom: 12px; margin-bottom: 6px; }
         .hist-date { font-weight: 800; font-size: 16px; color: var(--text-main); }
-        .hist-badge { background: #FCE7F3; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; margin-left: 8px; }
         .hist-detail { font-size: 14.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
         
         .action-buttons { display: flex; gap: 10px; }
@@ -101,42 +99,26 @@
         .btn-delete:hover { background: #FEE2E2; }
 
         /* =========================================================
-           PLANTILLA PDF CORREGIDA (PROPORCIONAL Y ORDENADA)
+           PLANTILLA PDF
            ========================================================= */
-        #pdf-template {
-            display: none; 
-            width: 100%;
-            max-width: 800px;
-            background: #fff;
-            padding: 35px 30px;
-            color: #111827;
-            font-family: 'Inter', sans-serif;
-        }
-        
+        #pdf-template { display: none; width: 100%; max-width: 800px; background: #fff; padding: 35px 30px; color: #111827; font-family: 'Inter', sans-serif; }
         .pdf-header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #111827; padding-bottom: 18px; }
         .pdf-header h1 { font-size: 26px; font-weight: 800; color: #111827; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 2px; }
         .pdf-header p { font-size: 14px; color: #4B5563; font-weight: 600; }
-        
         .pdf-section-title { font-size: 15px; font-weight: 800; color: #111827; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; background: #F3F4F6; padding: 10px 15px; border-left: 4px solid #F43F5E; }
         
-        /* Ajuste estricto de columnas y espacios */
         .pdf-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 25px; table-layout: fixed; }
         .pdf-table th, .pdf-table td { border: 1px solid #D1D5DB; padding: 12px 10px; text-align: center; vertical-align: middle; word-wrap: break-word; }
         .pdf-table th { background-color: #111827; color: #FFFFFF; font-weight: 700; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.5px; line-height: 1.4; padding: 14px 10px; }
         
-        /* Proporciones perfectas para las columnas */
-        .pdf-table th:nth-child(1) { width: 15%; }
-        .pdf-table th:nth-child(2) { width: 14%; }
-        .pdf-table th:nth-child(3) { width: 34%; } /* Más espacio para Ventana/Ovulación */
-        .pdf-table th:nth-child(4) { width: 10%; } /* Temperatura pequeña */
-        .pdf-table th:nth-child(5) { width: 27%; }
+        .pdf-table th:nth-child(1) { width: 16%; }
+        .pdf-table th:nth-child(2) { width: 15%; }
+        .pdf-table th:nth-child(3) { width: 34%; } 
+        .pdf-table th:nth-child(4) { width: 35%; } 
 
         .pdf-table tr:nth-child(even) { background-color: #F9FAFB; }
         .pdf-table td:first-child { font-weight: 700; color: #111827; }
-        
-        /* Evita cortar las filas por la mitad entre páginas */
         .pdf-table tr { page-break-inside: avoid; }
-
         .pdf-footer { text-align: center; font-size: 11px; color: #6B7280; margin-top: 30px; border-top: 1px solid #E5E7EB; padding-top: 15px; line-height: 1.5; }
     </style>
 </head>
@@ -161,27 +143,61 @@
         </div>
         
         <div class="section-title">Datos Biomédicos</div>
-        <div class="grid-2">
-            <div class="input-group">
-                <label for="duracionCiclo">Ciclo Estimado (Días):</label>
-                <input type="number" id="duracionCiclo" value="28" readonly style="color: var(--text-muted); cursor: not-allowed; background: #E5E7EB; border-color: transparent;">
-            </div>
-            <div class="input-group">
-                <label for="tempBasal">Temp. Basal (°C):</label>
-                <input type="number" id="tempBasal" step="0.1" placeholder="Ej: 36.5">
-            </div>
+        <div class="input-group" style="margin-bottom: 5px;">
+            <label for="duracionCiclo">Ciclo Estimado (Días):</label>
+            <input type="number" id="duracionCiclo" value="28" readonly style="color: var(--text-muted); cursor: not-allowed; background: #E5E7EB; border-color: transparent;">
         </div>
 
-        <label class="checkbox-container" for="activarIntimidad">
-            <span>❤️✨</span>
-            <input type="checkbox" id="activarIntimidad">
-        </label>
+        <div style="display: flex; gap: 15px;">
+            <label class="checkbox-container" for="activarIntimidad" title="Registrar Intimidad">
+                <span>❤️✨</span>
+                <input type="checkbox" id="activarIntimidad">
+            </label>
+            <label class="checkbox-container" for="activarSintomas" title="Registrar Síntomas Diarios">
+                <span>📝💧</span>
+                <input type="checkbox" id="activarSintomas">
+            </label>
+        </div>
 
-        <div class="fechas-intimidad-box" id="cajaFechasIntimidad">
-            <div id="contenedorInputsFechas" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
-                <!-- Inputs inyectados por JS -->
-            </div>
+        <div class="box-desplegable" id="cajaFechasIntimidad">
+            <label style="font-size: 13.5px; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 12px;">Fechas de Intimidad:</label>
+            <div id="contenedorInputsFechas" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;"></div>
             <button type="button" class="btn-add-fecha" id="btnAgregarFilaFecha">+ Agregar otra fecha</button>
+        </div>
+
+        <div class="box-desplegable" id="cajaSintomas">
+            <label style="font-size: 13.5px; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 12px; border-bottom: 1px solid #E5E7EB; padding-bottom: 8px;">Registro Diario de Síntomas</label>
+            
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>Fecha del síntoma:</label>
+                    <input type="date" id="fechaSintoma">
+                </div>
+                <div class="input-group">
+                    <label>Temp. Diaria (°C):</label>
+                    <input type="number" id="tempSintoma" step="0.1" placeholder="Ej: 36.6">
+                </div>
+            </div>
+            <div class="input-group" style="margin-top: 15px;">
+                <label>Flujo / Moco Cervical:</label>
+                <select id="mocoSintoma">
+                    <option value="">No registrar</option>
+                    <option value="Seco">Seco / Ninguno (Baja fertilidad)</option>
+                    <option value="Cremoso">Cremoso / Blanco (Media)</option>
+                    <option value="Clara">💧 Clara de huevo / Elástico (ALTA)</option>
+                </select>
+            </div>
+            <div class="input-group" style="margin-top: 15px;">
+                <label>Dolores / Estado físico:</label>
+                <select id="dolorSintoma">
+                    <option value="">Ninguno</option>
+                    <option value="Cólicos Leves">Cólicos Leves</option>
+                    <option value="Cólicos Fuertes">Cólicos Fuertes</option>
+                    <option value="Dolor de Cabeza">Dolor de Cabeza</option>
+                    <option value="Sensibilidad en Pechos">Sensibilidad en Pechos</option>
+                    <option value="Cansancio / Fatiga">Cansancio / Fatiga</option>
+                </select>
+            </div>
         </div>
 
         <button class="btn-primary" id="btnCalcular">Guardar en Historial</button>
@@ -194,13 +210,11 @@
                     <p id="resProximo">--</p>
                     <small id="resPruebaEmbarazo"></small>
                 </div>
-                
                 <div class="result-card card-ovulation">
                     <h3>🥚 Día de Ovulación</h3>
                     <p id="resOvulacion">--</p>
                     <small>Pico máximo de fertilidad</small>
                 </div>
-
                 <div class="result-card card-fertile">
                     <h3>⚠️ Ventana Fértil</h3>
                     <p id="resFertil">--</p>
@@ -208,7 +222,12 @@
                 </div>
             </div>
             
-            <div class="section-title">Tendencia Visual</div>
+            <div class="chart-container" id="wrapperTemp" style="display: none;">
+                <div class="chart-title">🌡️ Curva Térmica (Salto de Ovulación)</div>
+                <canvas id="graficoTemp"></canvas>
+            </div>
+
+            <div class="section-title">Tendencia Visual (Ciclos)</div>
             <div class="chart-container" id="chartWrapper">
                 <canvas id="graficoCiclos"></canvas>
             </div>
@@ -223,8 +242,8 @@
         <button class="btn-primary btn-pdf" id="btnPdf">📄 Generar Reporte PDF</button>
         
         <div class="actions-grid">
-            <button class="btn-primary btn-export" id="btnExport">💾 Respaldar Local</button>
-            <button class="btn-primary btn-import" id="btnImport">📂 Restaurar Local</button>
+            <button class="btn-export" id="btnExport">💾 Respaldar Local</button>
+            <button class="btn-import" id="btnImport">📂 Restaurar Local</button>
         </div>
         <input type="file" id="inputFile" accept=".json" style="display: none;">
     </div>
@@ -243,8 +262,7 @@
                     <th>Inicio<br>Regla</th>
                     <th>Duración<br>Ciclo</th>
                     <th>Ventana Fértil /<br>Ovulación</th>
-                    <th>Temp</th>
-                    <th>Registro de<br>Intimidad</th>
+                    <th>Registro Diario<br>(Intimidad, Temp & Notas)</th>
                 </tr>
             </thead>
             <tbody id="pdfTableBody">
@@ -254,7 +272,7 @@
         
         <div class="pdf-footer">
             Documento generado confidencialmente mediante Diario de Ciclo App.<br>
-            <strong>Clasificación de Fechas:</strong> (F) = Ventana Fértil | (O) = Día de Ovulación | (P) = Durante el Periodo.
+            <strong>Clasificación:</strong> (F) = Ventana Fértil | (O) = Día de Ovulación | (P) = Durante el Periodo.
         </div>
     </div>
 
@@ -267,10 +285,7 @@
             authDomain: "controlcilco.firebaseapp.com",
             databaseURL: "https://controlcilco-default-rtdb.firebaseio.com",
             projectId: "controlcilco",
-            storageBucket: "controlcilco.firebasestorage.app",
-            messagingSenderId: "952205287411",
-            appId: "1:952205287411:web:0500a6b166b6d3a6f8bc86",
-            measurementId: "G-ZD4H1HN4PZ"
+            storageBucket: "controlcilco.firebasestorage.app"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -283,6 +298,7 @@
 
         let registros = JSON.parse(localStorage.getItem("offline_registros")) || [];
         let chartInstancia = null; 
+        let chartTemp = null;
         let modoEdicionId = null; 
 
         const activarIntimidadCheckbox = document.getElementById("activarIntimidad");
@@ -293,12 +309,25 @@
         activarIntimidadCheckbox.addEventListener("change", () => {
             if (activarIntimidadCheckbox.checked) {
                 cajaFechasIntimidad.style.display = "block";
-                if (contenedorInputsFechas.children.length === 0) {
-                    agregarFilaFechaInput();
-                }
+                if (contenedorInputsFechas.children.length === 0) agregarFilaFechaInput();
             } else {
                 cajaFechasIntimidad.style.display = "none";
                 contenedorInputsFechas.innerHTML = "";
+            }
+        });
+
+        const activarSintomasCheckbox = document.getElementById("activarSintomas");
+        const cajaSintomas = document.getElementById("cajaSintomas");
+        
+        activarSintomasCheckbox.addEventListener("change", () => {
+            if (activarSintomasCheckbox.checked) {
+                cajaSintomas.style.display = "block";
+                if(!document.getElementById('fechaSintoma').value) document.getElementById('fechaSintoma').valueAsDate = new Date();
+            } else {
+                cajaSintomas.style.display = "none";
+                document.getElementById("tempSintoma").value = "";
+                document.getElementById("mocoSintoma").value = "";
+                document.getElementById("dolorSintoma").value = "";
             }
         });
 
@@ -319,24 +348,22 @@
             contenedorInputsFechas.appendChild(div);
         }
 
-        btnAgregarFilaFecha.addEventListener("click", () => {
-            agregarFilaFechaInput();
-        });
+        btnAgregarFilaFecha.addEventListener("click", () => agregarFilaFechaInput());
 
         window.addEventListener("DOMContentLoaded", () => {
             if (localStorage.getItem("draft_fechaInicio")) document.getElementById("fechaInicio").value = localStorage.getItem("draft_fechaInicio");
             if (localStorage.getItem("draft_fechaFin")) document.getElementById("fechaFin").value = localStorage.getItem("draft_fechaFin");
-            if (localStorage.getItem("draft_tempBasal")) document.getElementById("tempBasal").value = localStorage.getItem("draft_tempBasal");
             
             if (registros.length > 0) {
                 const ciclo = actualizarPromedioInteligente();
                 renderizarHistorial();
-                renderizarGrafico();
+                renderizarGraficos();
                 calcularProyecciones(registros[0].inicio, ciclo);
+                document.getElementById("resultadosPanel").style.display = "block";
             }
         });
 
-        ["fechaInicio", "fechaFin", "tempBasal"].forEach(id => {
+        ["fechaInicio", "fechaFin"].forEach(id => {
             document.getElementById(id).addEventListener("input", (e) => {
                 localStorage.setItem("draft_" + id, e.target.value);
             });
@@ -345,14 +372,11 @@
         function limpiarBorrador() {
             localStorage.removeItem("draft_fechaInicio");
             localStorage.removeItem("draft_fechaFin");
-            localStorage.removeItem("draft_tempBasal");
         }
 
         function formatearFecha(fechaStr, formatoCorto = false) {
             if (!fechaStr) return '--';
-            const opciones = formatoCorto 
-                ? { day: 'numeric', month: 'short', year: 'numeric' } 
-                : { day: 'numeric', month: 'short' };
+            const opciones = formatoCorto ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' };
             return new Date(fechaStr + 'T12:00:00').toLocaleDateString('es-ES', opciones);
         }
 
@@ -364,45 +388,61 @@
                 let actual = new Date(tempRegistros[i].inicio);
                 let anterior = new Date(tempRegistros[i+1].inicio);
                 let diffDays = Math.ceil(Math.abs(actual - anterior) / (1000 * 60 * 60 * 24));
-                sumaDias += diffDays;
-                conteo++;
+                sumaDias += diffDays; conteo++;
             }
             const promedio = Math.round(sumaDias / conteo);
             document.getElementById("duracionCiclo").value = promedio;
             return promedio;
         }
 
-        function renderizarGrafico() {
-            if (registros.length < 2) {
-                document.getElementById("chartWrapper").style.display = "none";
-                return;
-            }
+        function renderizarGraficos() {
+            if (registros.length < 1) return;
             document.getElementById("chartWrapper").style.display = "block";
-            let registrosGrafico = [...registros].sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
-            let etiquetas = []; let datosCiclo = [];
-            for (let i = 0; i < registrosGrafico.length - 1; i++) {
-                let actual = new Date(registrosGrafico[i].inicio);
-                let siguiente = new Date(registrosGrafico[i+1].inicio);
-                let duracion = Math.ceil(Math.abs(siguiente - actual) / (1000 * 60 * 60 * 24));
-                etiquetas.push(formatearFecha(registrosGrafico[i].inicio));
-                datosCiclo.push(duracion);
+            
+            if (registros.length >= 2) {
+                let registrosGrafico = [...registros].sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
+                let etiquetas = []; let datosCiclo = [];
+                for (let i = 0; i < registrosGrafico.length - 1; i++) {
+                    let actual = new Date(registrosGrafico[i].inicio);
+                    let siguiente = new Date(registrosGrafico[i+1].inicio);
+                    let duracion = Math.ceil(Math.abs(siguiente - actual) / (1000 * 60 * 60 * 24));
+                    etiquetas.push(formatearFecha(registrosGrafico[i].inicio, true));
+                    datosCiclo.push(duracion);
+                }
+                const ctx = document.getElementById('graficoCiclos').getContext('2d');
+                if(chartInstancia) chartInstancia.destroy();
+                chartInstancia = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: etiquetas, datasets: [{ label: 'Duración (días)', data: datosCiclo, borderColor: '#F43F5E', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 3, pointBackgroundColor: '#F43F5E', pointRadius: 5, fill: true, tension: 0.3 }] },
+                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { suggestedMin: 20, suggestedMax: 40 } } }
+                });
             }
-            const ctx = document.getElementById('graficoCiclos').getContext('2d');
-            if(chartInstancia) chartInstancia.destroy();
-            chartInstancia = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: etiquetas,
-                    datasets: [{
-                        label: 'Duración (días)',
-                        data: datosCiclo,
-                        borderColor: '#F43F5E',
-                        backgroundColor: 'rgba(244, 63, 94, 0.1)',
-                        borderWidth: 3, pointBackgroundColor: '#F43F5E', pointRadius: 5, fill: true, tension: 0.3 
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { suggestedMin: 20, suggestedMax: 40 } } }
-            });
+
+            const cicloActual = registros[0];
+            if (cicloActual.notasDiarias && Object.keys(cicloActual.notasDiarias).length > 0) {
+                let fechasTemp = []; let valoresTemp = [];
+                Object.keys(cicloActual.notasDiarias).sort().forEach(f => {
+                    if (cicloActual.notasDiarias[f].temp) {
+                        fechasTemp.push(formatearFecha(f, true));
+                        valoresTemp.push(parseFloat(cicloActual.notasDiarias[f].temp));
+                    }
+                });
+
+                if(fechasTemp.length > 0) {
+                    document.getElementById("wrapperTemp").style.display = "block";
+                    const ctxTemp = document.getElementById('graficoTemp').getContext('2d');
+                    if(chartTemp) chartTemp.destroy();
+                    chartTemp = new Chart(ctxTemp, {
+                        type: 'line',
+                        data: { labels: fechasTemp, datasets: [{ label: 'Temp Diaria', data: valoresTemp, borderColor: '#8B5CF6', backgroundColor: 'rgba(139, 92, 246, 0.1)', borderWidth: 3, pointBackgroundColor: '#8B5CF6', pointRadius: 5, fill: true, tension: 0.2 }] },
+                        options: { responsive: true, plugins: { legend: { display: false } } }
+                    });
+                } else {
+                    document.getElementById("wrapperTemp").style.display = "none";
+                }
+            } else {
+                document.getElementById("wrapperTemp").style.display = "none";
+            }
         }
 
         function renderizarHistorial() {
@@ -431,43 +471,52 @@
                 const fIni = new Date(ovu); fIni.setDate(ovu.getDate() - 5);
                 const fFin = new Date(ovu); fFin.setDate(ovu.getDate() + 1);
                 
-                const diasSangrado = 7;
-                const finPeriodo = new Date(fechaObj); finPeriodo.setDate(finPeriodo.getDate() + (diasSangrado - 1));
+                let fechaFinPeriodo;
+                let textoSangrado;
+                if (reg.fin) {
+                    fechaFinPeriodo = new Date(reg.fin + 'T12:00:00');
+                    const diffSangrado = Math.ceil(Math.abs(fechaFinPeriodo - fechaObj) / (1000 * 60 * 60 * 24)) + 1;
+                    textoSangrado = `${diffSangrado} días (al ${formatearFecha(reg.fin, true)})`;
+                } else {
+                    fechaFinPeriodo = new Date(fechaObj); fechaFinPeriodo.setDate(fechaFinPeriodo.getDate() + 6);
+                    textoSangrado = '7 días';
+                }
 
                 let html = `
                     <div class="hist-header">
-                        <div>
-                            <span class="hist-date">🩸 ${formatearFecha(reg.inicio, true)}</span>
-                        </div>
+                        <div><span class="hist-date">🩸 ${formatearFecha(reg.inicio)}</span></div>
                         <div class="action-buttons">
                             <button class="btn-icon btn-edit no-print" data-id="${reg.id}" title="Editar">✏️</button>
                             <button class="btn-icon btn-delete no-print" data-id="${reg.id}" title="Borrar">🗑️</button>
                         </div>
                     </div>
-                    <div class="hist-detail"><strong>⏳ Ciclo:</strong> ${duracionCicloTexto} &nbsp;|&nbsp; <strong>🩸 Sangrado:</strong> ${reg.diasSangrado || '7'} ${reg.fin ? `(al ${formatearFecha(reg.fin)})` : ''}</div>
+                    <div class="hist-detail"><strong>⏳ Ciclo:</strong> ${duracionCicloTexto} &nbsp;|&nbsp; <strong>🩸 Sangrado:</strong> ${textoSangrado}</div>
                 `;
-                if(reg.temp) html += `<div class="hist-detail"><strong>🌡️ Temperatura:</strong> ${reg.temp}°C</div>`;
                 
                 if(reg.intimidadFechas && reg.intimidadFechas.length > 0) {
-                    html += `<div style="font-size: 14px; margin-top: 10px; color: var(--text-main); font-weight: 700;">❤️✨ Fechas registradas:</div>`;
-                    
+                    html += `<div style="font-size: 13.5px; margin-top: 10px; color: var(--text-main); font-weight: 700;">❤️✨:</div>`;
                     reg.intimidadFechas.forEach(f => {
                         const fDate = new Date(f + 'T12:00:00');
-                        let badge = "";
-                        let colorTexto = "var(--text-muted)";
+                        let badge = ""; let colorTexto = "var(--text-muted)";
+                        if (fDate.getTime() === ovu.getTime()) { badge = " <span style='color: #7C3AED; font-weight: 700;'>🥚 (Ovulación)</span>"; colorTexto = "#111827"; }
+                        else if (fDate >= fIni && fDate <= fFin) { badge = " <span style='color: #D97706; font-weight: 700;'>⚠️ (Fértil)</span>"; colorTexto = "#111827"; }
+                        else if (fDate >= fechaObj && fDate <= fechaFinPeriodo) { badge = " <span style='color: #E11D48; font-weight: 700;'>🩸 (Periodo)</span>"; colorTexto = "#111827"; }
+                        html += `<div style="font-size: 13px; color: ${colorTexto}; margin-left: 12px; margin-top: 4px;">• ${formatearFecha(f, true)}${badge}</div>`;
+                    });
+                }
+
+                if(reg.notasDiarias && Object.keys(reg.notasDiarias).length > 0) {
+                    html += `<div style="font-size: 13.5px; margin-top: 10px; color: var(--text-main); font-weight: 700;">📝💧 Diario de Síntomas:</div>`;
+                    Object.keys(reg.notasDiarias).sort().forEach(f => {
+                        const nota = reg.notasDiarias[f];
+                        let info = [];
+                        if (nota.temp) info.push(`🌡️ ${nota.temp}°C`);
+                        if (nota.moco) info.push(nota.moco === 'Clara' ? '💧 Clara de huevo (ALTA Fertilidad)' : nota.moco);
+                        if (nota.dolor) info.push(`🤕 ${nota.dolor}`);
                         
-                        if (fDate.getTime() === ovu.getTime()) {
-                            badge = " <span style='color: #7C3AED; font-weight: 700;'>🥚 (Día de Ovulación)</span>";
-                            colorTexto = "#111827";
-                        } else if (fDate >= fIni && fDate <= fFin) {
-                            badge = " <span style='color: #D97706; font-weight: 700;'>⚠️ (Ventana Fértil)</span>";
-                            colorTexto = "#111827";
-                        } else if (fDate >= fechaObj && fDate <= finPeriodo) {
-                            badge = " <span style='color: #E11D48; font-weight: 700;'>🩸 (Durante el periodo)</span>";
-                            colorTexto = "#111827";
-                        }
-                        
-                        html += `<div style="font-size: 13.5px; color: ${colorTexto}; margin-left: 12px; margin-top: 5px;">• ${formatearFecha(f, true)}${badge}</div>`;
+                        html += `<div style="font-size: 13px; color: var(--text-muted); margin-left: 12px; margin-top: 4px; padding: 4px; background: #F8FAFC; border-left: 2px solid #CBD5E1; border-radius: 4px;">
+                                    <strong>${formatearFecha(f, true)}:</strong> ${info.join(" | ")}
+                                 </div>`;
                     });
                 }
                 
@@ -477,13 +526,11 @@
 
             document.querySelectorAll('.btn-delete').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
-                    if(confirm("¿Estás segura de eliminar este registro?")) {
-                        const id = e.target.getAttribute('data-id');
-                        await remove(ref(db, 'registros_ciclo/' + id));
-                    }
+                    if(confirm("¿Estás segura de eliminar este ciclo completo?")) await remove(ref(db, 'registros_ciclo/' + e.target.getAttribute('data-id')));
                 });
             });
 
+            // EDICIÓN MEJORADA (Carga regla, fin, intimidad Y síntomas para editar)
             document.querySelectorAll('.btn-edit').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = e.target.getAttribute('data-id');
@@ -491,16 +538,26 @@
                     if(reg) {
                         document.getElementById("fechaInicio").value = reg.inicio || "";
                         document.getElementById("fechaFin").value = reg.fin || "";
-                        document.getElementById("tempBasal").value = reg.temp || "";
                         
                         contenedorInputsFechas.innerHTML = "";
                         if(reg.intimidadFechas && reg.intimidadFechas.length > 0) {
-                            activarIntimidadCheckbox.checked = true;
-                            cajaFechasIntimidad.style.display = "block";
+                            activarIntimidadCheckbox.checked = true; cajaFechasIntimidad.style.display = "block";
                             reg.intimidadFechas.forEach(f => agregarFilaFechaInput(f));
                         } else {
-                            activarIntimidadCheckbox.checked = false;
-                            cajaFechasIntimidad.style.display = "none";
+                            activarIntimidadCheckbox.checked = false; cajaFechasIntimidad.style.display = "none";
+                        }
+
+                        if(reg.notasDiarias && Object.keys(reg.notasDiarias).length > 0) {
+                            activarSintomasCheckbox.checked = true; cajaSintomas.style.display = "block";
+                            // Carga la primera nota disponible para edición rápida
+                            const primeraFecha = Object.keys(reg.notasDiarias).sort()[0];
+                            const notaData = reg.notasDiarias[primeraFecha];
+                            document.getElementById("fechaSintoma").value = primeraFecha;
+                            document.getElementById("tempSintoma").value = notaData.temp || "";
+                            document.getElementById("mocoSintoma").value = notaData.moco || "";
+                            document.getElementById("dolorSintoma").value = notaData.dolor || "";
+                        } else {
+                            activarSintomasCheckbox.checked = false; cajaSintomas.style.display = "none";
                         }
                         
                         modoEdicionId = id;
@@ -524,13 +581,11 @@
             document.getElementById("resPruebaEmbarazo").textContent = `*Prueba embarazo sugerida: ${emb.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
             document.getElementById("resOvulacion").textContent = ovu.toLocaleDateString('es-ES', opt);
             document.getElementById("resFertil").textContent = `${fIni.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} al ${fFin.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
-            document.getElementById("resultadosPanel").style.display = "block";
         }
 
         document.getElementById("btnCalcular").addEventListener("click", async () => {
             const fechaInicio = document.getElementById("fechaInicio").value;
             const fechaFin = document.getElementById("fechaFin").value;
-            const temp = document.getElementById("tempBasal").value;
             
             let fechasIntimidadArr = [];
             if (activarIntimidadCheckbox.checked) {
@@ -538,13 +593,33 @@
                 inputsFechas.forEach(input => { if (input.value) fechasIntimidadArr.push(input.value); });
             }
 
-            if (!fechaInicio) {
-                if (fechasIntimidadArr.length > 0 && registros.length > 0) {
+            let notaObj = null;
+            if (activarSintomasCheckbox.checked) {
+                const fSintoma = document.getElementById("fechaSintoma").value;
+                const tSintoma = document.getElementById("tempSintoma").value;
+                const mSintoma = document.getElementById("mocoSintoma").value;
+                const dSintoma = document.getElementById("dolorSintoma").value;
+                
+                if (fSintoma && (tSintoma || mSintoma || dSintoma)) {
+                    notaObj = { fecha: fSintoma, temp: tSintoma, moco: mSintoma, dolor: dSintoma };
+                } else if (fSintoma && modoEdicionId) {
+                    // Permitir limpiar o actualizar nota si se está editando
+                    notaObj = { fecha: fSintoma, temp: tSintoma, moco: mSintoma, dolor: dSintoma };
+                } else if (fSintoma) {
+                    alert("Anota al menos un síntoma o temperatura en la fecha seleccionada."); return;
+                } else {
+                    alert("Selecciona la fecha para guardar el síntoma."); return;
+                }
+            }
+
+            if (!fechaInicio && !modoEdicionId) {
+                if (fechasIntimidadArr.length > 0 || notaObj) {
+                    if (registros.length === 0) return alert("Por favor ingresa primero la fecha de inicio del ciclo.");
                     let actualizados = 0;
+                    
                     for (const f of fechasIntimidadArr) {
                         let targetCycle = registros.find(r => new Date(r.inicio + 'T12:00:00') <= new Date(f + 'T12:00:00'));
                         if (!targetCycle) targetCycle = registros[registros.length - 1];
-
                         if (targetCycle) {
                             let updatedFechas = targetCycle.intimidadFechas ? [...targetCycle.intimidadFechas] : [];
                             if (!updatedFechas.includes(f)) {
@@ -554,22 +629,54 @@
                             }
                         }
                     }
+
+                    if (notaObj) {
+                        let targetCycle = registros.find(r => new Date(r.inicio + 'T12:00:00') <= new Date(notaObj.fecha + 'T12:00:00'));
+                        if (!targetCycle) targetCycle = registros[registros.length - 1];
+                        
+                        let currentNotas = targetCycle.notasDiarias ? JSON.parse(JSON.stringify(targetCycle.notasDiarias)) : {};
+                        if(!currentNotas[notaObj.fecha]) currentNotas[notaObj.fecha] = {};
+                        currentNotas[notaObj.fecha].temp = notaObj.temp || null;
+                        currentNotas[notaObj.fecha].moco = notaObj.moco || null;
+                        currentNotas[notaObj.fecha].dolor = notaObj.dolor || null;
+
+                        await update(ref(db, 'registros_ciclo/' + targetCycle.id), { notasDiarias: currentNotas });
+                        actualizados++;
+                    }
                     
-                    if (actualizados > 0) alert("❤️ Fechas agregadas correctamente a tus ciclos correspondientes.");
+                    if (actualizados > 0) alert("✔️ Datos actualizados correctamente.");
                     
-                    activarIntimidadCheckbox.checked = false;
-                    cajaFechasIntimidad.style.display = "none";
-                    contenedorInputsFechas.innerHTML = "";
+                    activarIntimidadCheckbox.checked = false; cajaFechasIntimidad.style.display = "none"; contenedorInputsFechas.innerHTML = "";
+                    activarSintomasCheckbox.checked = false; cajaSintomas.style.display = "none";
+                    document.getElementById("tempSintoma").value = ""; document.getElementById("mocoSintoma").value = ""; document.getElementById("dolorSintoma").value = "";
                     return;
                 } else {
-                    alert("Por favor ingresa la fecha de inicio del periodo o agrega al menos una fecha de intimidad.");
-                    return;
+                    alert("Ingresa la fecha de inicio de regla, o activa y agrega intimidad/síntomas."); return;
                 }
             }
 
-            const nuevoRegistro = { inicio: fechaInicio, fin: fechaFin, temp: temp || null, intimidadFechas: fechasIntimidadArr };
+            let notasNuevas = {};
+            if (notaObj) {
+                notasNuevas[notaObj.fecha] = {
+                    temp: notaObj.temp || null,
+                    moco: notaObj.moco || null,
+                    dolor: notaObj.dolor || null
+                };
+            }
+
+            const nuevoRegistro = { 
+                inicio: fechaInicio || (modoEdicionId ? registros.find(r => r.id === modoEdicionId).inicio : ''), 
+                fin: fechaFin, 
+                intimidadFechas: fechasIntimidadArr 
+            };
+            if (Object.keys(notasNuevas).length > 0) nuevoRegistro.notasDiarias = notasNuevas;
 
             if (modoEdicionId) {
+                const oldReg = registros.find(r => r.id === modoEdicionId);
+                if (oldReg && oldReg.notasDiarias) {
+                    // Fusionar notas anteriores con las editadas
+                    nuevoRegistro.notasDiarias = { ...oldReg.notasDiarias, ...notasNuevas };
+                }
                 await update(ref(db, 'registros_ciclo/' + modoEdicionId), nuevoRegistro);
                 modoEdicionId = null; 
                 document.getElementById("btnCalcular").textContent = "Guardar en Historial"; 
@@ -577,12 +684,10 @@
                 await push(registrosRef, nuevoRegistro);
             }
             
-            document.getElementById("fechaInicio").value = "";
-            document.getElementById("fechaFin").value = "";
-            document.getElementById("tempBasal").value = "";
-            activarIntimidadCheckbox.checked = false;
-            cajaFechasIntimidad.style.display = "none";
-            contenedorInputsFechas.innerHTML = "";
+            document.getElementById("fechaInicio").value = ""; document.getElementById("fechaFin").value = ""; 
+            activarIntimidadCheckbox.checked = false; cajaFechasIntimidad.style.display = "none"; contenedorInputsFechas.innerHTML = "";
+            activarSintomasCheckbox.checked = false; cajaSintomas.style.display = "none";
+            document.getElementById("tempSintoma").value = ""; document.getElementById("mocoSintoma").value = ""; document.getElementById("dolorSintoma").value = "";
             limpiarBorrador();
         });
 
@@ -590,29 +695,65 @@
             const data = snapshot.val();
             if (data) {
                 registros = [];
-                Object.keys(data).forEach(key => {
-                    let item = data[key];
-                    item.id = key;
-                    registros.push(item);
-                });
-                
+                Object.keys(data).forEach(key => { let item = data[key]; item.id = key; registros.push(item); });
                 registros.sort((a, b) => new Date(b.inicio) - new Date(a.inicio));
                 localStorage.setItem("offline_registros", JSON.stringify(registros));
-                
                 const ciclo = actualizarPromedioInteligente();
-                renderizarHistorial();
-                renderizarGrafico();
+                renderizarHistorial(); renderizarGraficos();
                 calcularProyecciones(registros[0].inicio, ciclo);
-            } else {
-                document.getElementById("historial").innerHTML = "";
-                document.getElementById("resultadosPanel").style.display = "none";
+                document.getElementById("resultadosPanel").style.display = "block";
+            } else if (registros.length === 0) {
+                document.getElementById("historial").innerHTML = ""; 
                 document.getElementById("chartWrapper").style.display = "none";
-                localStorage.removeItem("offline_registros");
+                document.getElementById("wrapperTemp").style.display = "none"; 
+                document.getElementById("resultadosPanel").style.display = "none";
             }
         });
 
         // =========================================================
-        // FUNCIÓN PDF MEJORADA (PROPORCIONES PERFECTAS)
+        // RESPALDAR Y RESTAURAR DATOS (LOCAL)
+        // =========================================================
+        document.getElementById("btnExport").addEventListener("click", () => {
+            if (registros.length === 0) {
+                alert("No hay registros para respaldar.");
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(registros, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "respaldo_diario_ciclo.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        });
+
+        document.getElementById("btnImport").addEventListener("click", () => {
+            document.getElementById("inputFile").click();
+        });
+
+        document.getElementById("inputFile").addEventListener("change", (e) => {
+            const fileReader = new FileReader();
+            if (e.target.files[0]) {
+                fileReader.readAsText(e.target.files[0], "UTF-8");
+                fileReader.onload = (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        if (Array.isArray(importedData)) {
+                            localStorage.setItem("offline_registros", JSON.stringify(importedData));
+                            alert("✅ Datos restaurados exitosamente. La página se recargará.");
+                            location.reload();
+                        } else {
+                            alert("❌ El archivo no tiene un formato válido.");
+                        }
+                    } catch (error) {
+                        alert("❌ Error al leer el archivo JSON.");
+                    }
+                };
+            }
+        });
+
+        // =========================================================
+        // FUNCIÓN PDF
         // =========================================================
         document.getElementById("btnPdf").addEventListener("click", () => {
             const template = document.getElementById("pdf-template");
@@ -622,21 +763,16 @@
             const appUI = document.getElementById("app-ui");
             const controlesUI = document.getElementById("controles-inferiores");
 
-            btn.textContent = "⏳ Generando Documento...";
-            btn.style.pointerEvents = "none";
-
+            btn.textContent = "⏳ Generando Documento..."; btn.style.pointerEvents = "none";
             tbody.innerHTML = ""; 
-            const fechaHoy = new Date().toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' });
-            document.getElementById("pdfFechaGeneracion").textContent = `Emitido el: ${fechaHoy}`;
+            document.getElementById("pdfFechaGeneracion").textContent = `Emitido el: ${new Date().toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })}`;
             
             const promedioGeneral = actualizarPromedioInteligente();
 
             for (let i = 0; i < registros.length; i++) {
                 const reg = registros[i];
-                
                 let duracionCicloValor = promedioGeneral;
                 let duracionCicloTexto = "--";
-                
                 if (i > 0) { 
                     const actualInicio = new Date(reg.inicio + 'T12:00:00');
                     const siguienteInicio = new Date(registros[i - 1].inicio + 'T12:00:00');
@@ -650,25 +786,30 @@
                 const fIni = new Date(ovu); fIni.setDate(ovu.getDate() - 5);
                 const fFin = new Date(ovu); fFin.setDate(ovu.getDate() + 1);
                 
-                const diasSangrado = 7;
-                const finPeriodo = new Date(fechaObj); finPeriodo.setDate(finPeriodo.getDate() + (diasSangrado - 1));
+                let fechaFinPeriodo;
+                if (reg.fin) { fechaFinPeriodo = new Date(reg.fin + 'T12:00:00'); } else { fechaFinPeriodo = new Date(fechaObj); fechaFinPeriodo.setDate(fechaFinPeriodo.getDate() + 6); }
                 
-                // Formato limpio con guión para ahorrar espacio horizontal
                 const ventana = `${fIni.toLocaleDateString('es-ES', {day:'numeric', month:'short'})} - ${fFin.toLocaleDateString('es-ES', {day:'numeric', month:'short'})}<br><span style="color: #6B7280; font-size: 11px;">(Ovulación: ${ovu.toLocaleDateString('es-ES', {day:'numeric', month:'short'})})</span>`;
 
-                let notasPDF = "";
+                let col4HTML = "";
                 if (reg.intimidadFechas && reg.intimidadFechas.length > 0) {
-                    let fechasFormateadas = reg.intimidadFechas.map(f => {
-                        const fDate = new Date(f + 'T12:00:00');
-                        let tag = "";
-                        if (fDate.getTime() === ovu.getTime()) tag = " (O)";
-                        else if (fDate >= fIni && fDate <= fFin) tag = " (F)";
-                        else if (fDate >= fechaObj && fDate <= finPeriodo) tag = " (P)";
-                        
-                        // nowrap evita saltos de línea extraños como "19 \n sept"
+                    let fechasStr = reg.intimidadFechas.map(f => {
+                        const fDate = new Date(f + 'T12:00:00'); let tag = "";
+                        if (fDate.getTime() === ovu.getTime()) tag = " (O)"; else if (fDate >= fIni && fDate <= fFin) tag = " (F)"; else if (fDate >= fechaObj && fDate <= fechaFinPeriodo) tag = " (P)";
                         return `<span style="white-space: nowrap;">${formatearFecha(f)}${tag}</span>`;
                     }).join(", ");
-                    notasPDF = "❤️ " + fechasFormateadas;
+                    col4HTML += `❤️ <strong>Intimidad:</strong> ${fechasStr}<br>`;
+                }
+                
+                if (reg.notasDiarias && Object.keys(reg.notasDiarias).length > 0) {
+                    let notasStr = Object.keys(reg.notasDiarias).sort().map(f => {
+                        const nota = reg.notasDiarias[f]; let i = [];
+                        if (nota.temp) i.push(`${nota.temp}°C`);
+                        if (nota.moco) i.push(nota.moco === 'Clara' ? '💧Clara' : nota.moco);
+                        if (nota.dolor) i.push(`${nota.dolor}`);
+                        return `<strong>${formatearFecha(f)}:</strong> ${i.join(" | ")}`;
+                    }).join("<br>");
+                    col4HTML += `<span style="font-size: 10px; color: #4B5563;">${notasStr}</span>`;
                 }
 
                 const tr = document.createElement("tr");
@@ -676,40 +817,22 @@
                     <td>${formatearFecha(reg.inicio)}</td>
                     <td>${duracionCicloTexto}</td>
                     <td>${ventana}</td>
-                    <td>${reg.temp ? reg.temp + '°C' : '-'}</td>
-                    <td style="text-align: left; font-size: 12px; line-height: 1.5;">${notasPDF}</td>
+                    <td style="text-align: left; font-size: 11px; line-height: 1.4;">${col4HTML || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             }
 
-            appUI.style.display = "none";
-            controlesUI.style.display = "none";
-            document.body.style.overflow = "visible";
-            document.body.style.background = "#ffffff";
-            
-            template.style.display = "block";
-            window.scrollTo(0, 0);
+            appUI.style.display = "none"; controlesUI.style.display = "none";
+            document.body.style.overflow = "visible"; document.body.style.background = "#ffffff";
+            template.style.display = "block"; window.scrollTo(0, 0);
 
-            // Se agregó pagebreak config para seguridad adicional
-            const opt = {
-                margin:       [15, 15, 15, 15], 
-                filename:     'Reporte_Del_Ciclo.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-            };
+            const opt = { margin: [15, 15, 15, 15], filename: 'Reporte_Del_Ciclo.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } };
 
             setTimeout(() => {
                 html2pdf().set(opt).from(template).save().then(() => {
-                    template.style.display = "none";
-                    appUI.style.display = "";
-                    controlesUI.style.display = "";
-                    document.body.style.overflow = "";
-                    document.body.style.background = "";
-                    
-                    btn.textContent = "📄 Generar Reporte PDF";
-                    btn.style.pointerEvents = "auto";
+                    template.style.display = "none"; appUI.style.display = ""; controlesUI.style.display = "";
+                    document.body.style.overflow = ""; document.body.style.background = "";
+                    btn.textContent = "📄 Generar Reporte PDF"; btn.style.pointerEvents = "auto";
                 });
             }, 800);
         });
