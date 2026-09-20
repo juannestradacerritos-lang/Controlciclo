@@ -1,0 +1,16 @@
+{
+  "name": "Diario de Ciclo Compartido",
+  "short_name": "Diario Ciclo",
+  "description": "Control de periodo y ovulación en pareja.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F9FAFB",
+  "theme_color": "#F43F5E",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/820/820792.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
