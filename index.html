@@ -69,7 +69,7 @@
         .btn-import:hover { background: #E5E7EB; transform: translateY(-2px); }
 
         .results { margin-top: 40px; display: none; }
-        .cards-grid { display: grid; gap: 16px; }
+        .cards-grid { display: grid; gap: 16px; margin-bottom: 25px; } /* Ajuste de separación */
         .result-card { background: var(--card-bg); border: 1.5px solid var(--border-light); padding: 22px; border-radius: 20px; position: relative; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; }
         .result-card:hover { border-color: #D1D5DB; }
         .result-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
@@ -262,7 +262,8 @@
                     <th>Inicio<br>Regla</th>
                     <th>Duración<br>Ciclo</th>
                     <th>Ventana Fértil /<br>Ovulación</th>
-                    <th>Registro Diario<br>(Intimidad, Temp & Notas)</th>
+                    <!-- Cabecera del PDF minimalista -->
+                    <th style="font-size: 16px;">❤️✨</th>
                 </tr>
             </thead>
             <tbody id="pdfTableBody">
@@ -301,6 +302,7 @@
         let chartTemp = null;
         let modoEdicionId = null; 
 
+        // Checkboxes Lógica
         const activarIntimidadCheckbox = document.getElementById("activarIntimidad");
         const cajaFechasIntimidad = document.getElementById("cajaFechasIntimidad");
         const contenedorInputsFechas = document.getElementById("contenedorInputsFechas");
@@ -494,7 +496,7 @@
                 `;
                 
                 if(reg.intimidadFechas && reg.intimidadFechas.length > 0) {
-                    html += `<div style="font-size: 13.5px; margin-top: 10px; color: var(--text-main); font-weight: 700;">❤️✨:</div>`;
+                    html += `<div style="font-size: 13.5px; margin-top: 10px; color: var(--text-main); font-weight: 700;">❤️✨ Fechas de Intimidad:</div>`;
                     reg.intimidadFechas.forEach(f => {
                         const fDate = new Date(f + 'T12:00:00');
                         let badge = ""; let colorTexto = "var(--text-muted)";
@@ -792,13 +794,14 @@
                 const ventana = `${fIni.toLocaleDateString('es-ES', {day:'numeric', month:'short'})} - ${fFin.toLocaleDateString('es-ES', {day:'numeric', month:'short'})}<br><span style="color: #6B7280; font-size: 11px;">(Ovulación: ${ovu.toLocaleDateString('es-ES', {day:'numeric', month:'short'})})</span>`;
 
                 let col4HTML = "";
+                // Simplificación del contenido del PDF a pedido
                 if (reg.intimidadFechas && reg.intimidadFechas.length > 0) {
                     let fechasStr = reg.intimidadFechas.map(f => {
                         const fDate = new Date(f + 'T12:00:00'); let tag = "";
                         if (fDate.getTime() === ovu.getTime()) tag = " (O)"; else if (fDate >= fIni && fDate <= fFin) tag = " (F)"; else if (fDate >= fechaObj && fDate <= fechaFinPeriodo) tag = " (P)";
                         return `<span style="white-space: nowrap;">${formatearFecha(f)}${tag}</span>`;
                     }).join(", ");
-                    col4HTML += `❤️ <strong>Intimidad:</strong> ${fechasStr}<br>`;
+                    col4HTML += `❤️ ${fechasStr}<br>`;
                 }
                 
                 if (reg.notasDiarias && Object.keys(reg.notasDiarias).length > 0) {
