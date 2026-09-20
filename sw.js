@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ciclo-cache-v6';
+const CACHE_NAME = 'ciclo-cache-v7';
 const urlsToCache = [
   './',
   './index.html',
