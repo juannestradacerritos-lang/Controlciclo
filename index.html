@@ -150,12 +150,31 @@
         <button class="btn-primary btn-pdf" id="btnPdf">📄 Descargar Reporte Clínico</button>
     </div>
 
-    <script>
+    <!-- Conexión a Firebase con tus credenciales integradas -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4usCsv7vxYrqd_R3GefHecy1ZgPFivjU",
+            authDomain: "controlcilco.firebaseapp.com",
+            databaseURL: "https://controlcilco-default-rtdb.firebaseio.com",
+            projectId: "controlcilco",
+            storageBucket: "controlcilco.firebasestorage.app",
+            messagingSenderId: "952205287411",
+            appId: "1:952205287411:web:0500a6b166b6d3a6f8bc86",
+            measurementId: "G-ZD4H1HN4PZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const registrosRef = ref(db, "registros_ciclo");
+
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
         }
 
-        let registros = JSON.parse(localStorage.getItem('registros_ciclo')) || [];
+        let registros = [];
         let chartInstancia = null; 
 
         function formatearFecha(fechaStr) {
@@ -185,7 +204,6 @@
                 document.getElementById("chartWrapper").style.display = "none";
                 return;
             }
-            
             document.getElementById("chartWrapper").style.display = "block";
             
             let registrosGrafico = [...registros].sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
@@ -202,7 +220,6 @@
             }
 
             const ctx = document.getElementById('graficoCiclos').getContext('2d');
-            
             if(chartInstancia) chartInstancia.destroy();
 
             chartInstancia = new Chart(ctx, {
@@ -225,12 +242,7 @@
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { 
-                            beginAtZero: false, 
-                            suggestedMin: 20, 
-                            suggestedMax: 40,
-                            title: { display: true, text: 'Días' }
-                        }
+                        y: { suggestedMin: 20, suggestedMax: 40, title: { display: true, text: 'Días' } }
                     }
                 }
             });
@@ -258,16 +270,39 @@
             });
         }
 
-        window.onload = () => {
-            if(registros.length > 0) {
-                actualizarPromedioInteligente();
+        function calcularProyecciones(ultimoInicio, cicloDias) {
+            const fechaObj = new Date(ultimoInicio + 'T12:00:00');
+            const prox = new Date(fechaObj); prox.setDate(fechaObj.getDate() + cicloDias);
+            const emb = new Date(prox); emb.setDate(prox.getDate() + 1);
+            const ovu = new Date(prox); ovu.setDate(prox.getDate() - 14);
+            const fIni = new Date(ovu); fIni.setDate(ovu.getDate() - 5);
+            const fFin = new Date(ovu); fFin.setDate(ovu.getDate() + 1);
+
+            const opt = { weekday: 'short', day: 'numeric', month: 'short' };
+            document.getElementById("resProximo").textContent = prox.toLocaleDateString('es-ES', opt);
+            document.getElementById("resPruebaEmbarazo").textContent = `*Prueba de embarazo recomendada desde el ${emb.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
+            document.getElementById("resOvulacion").textContent = ovu.toLocaleDateString('es-ES', opt);
+            document.getElementById("resFertil").textContent = `${fIni.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} al ${fFin.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
+            document.getElementById("resultadosPanel").style.display = "block";
+        }
+
+        // Sincronización en tiempo real
+        onValue(registrosRef, (snapshot) => {
+            const data = snapshot.val();
+            registros = [];
+            if (data) {
+                Object.keys(data).forEach(key => registros.push(data[key]));
+                registros.sort((a, b) => new Date(b.inicio) - new Date(a.inicio));
+                
+                const ciclo = actualizarPromedioInteligente();
                 renderizarHistorial();
                 renderizarGrafico();
-                document.getElementById("resultadosPanel").style.display = "block";
+                calcularProyecciones(registros[0].inicio, ciclo);
             }
-        };
+        });
 
-        document.getElementById("btnCalcular").addEventListener("click", () => {
+        // Guardar nuevo registro
+        document.getElementById("btnCalcular").addEventListener("click", async () => {
             const fechaInput = document.getElementById("fechaInicio").value;
             const fechaFinInput = document.getElementById("fechaFin").value;
             const tempInput = document.getElementById("tempBasal").value;
@@ -282,29 +317,21 @@
                 diasSangrado = (Math.ceil(Math.abs(new Date(fechaFinInput) - new Date(fechaInput)) / (1000 * 60 * 60 * 24)) + 1) + " días";
             }
 
-            registros.push({ inicio: fechaInput, fin: fechaFinInput, diasSangrado, temp: tempInput, intimidad: intimidadInput });
-            localStorage.setItem('registros_ciclo', JSON.stringify(registros));
+            try {
+                await push(registrosRef, {
+                    inicio: fechaInput,
+                    fin: fechaFinInput,
+                    diasSangrado: diasSangrado,
+                    temp: tempInput,
+                    intimidad: intimidadInput,
+                    creado: Date.now()
+                });
 
-            const cicloActualizado = actualizarPromedioInteligente();
-            renderizarHistorial();
-            renderizarGrafico(); 
-
-            const fechaObj = new Date(fechaInput + 'T12:00:00');
-            const prox = new Date(fechaObj); prox.setDate(fechaObj.getDate() + cicloActualizado);
-            const emb = new Date(prox); emb.setDate(prox.getDate() + 1);
-            const ovu = new Date(prox); ovu.setDate(prox.getDate() - 14);
-            const fIni = new Date(ovu); fIni.setDate(ovu.getDate() - 5);
-            const fFin = new Date(ovu); fFin.setDate(ovu.getDate() + 1);
-
-            const opt = { weekday: 'short', day: 'numeric', month: 'short' };
-            document.getElementById("resProximo").textContent = prox.toLocaleDateString('es-ES', opt);
-            document.getElementById("resPruebaEmbarazo").textContent = `*Prueba de embarazo recomendada desde el ${emb.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
-            document.getElementById("resOvulacion").textContent = ovu.toLocaleDateString('es-ES', opt);
-            document.getElementById("resFertil").textContent = `${fIni.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} al ${fFin.toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}`;
-            
-            document.getElementById("resultadosPanel").style.display = "block";
-            document.getElementById("tempBasal").value = "";
-            document.getElementById("intimidad").checked = false;
+                document.getElementById("tempBasal").value = "";
+                document.getElementById("intimidad").checked = false;
+            } catch (err) {
+                alert("Error al guardar en la nube: " + err.message);
+            }
         });
 
         document.getElementById("btnPdf").addEventListener("click", () => {
